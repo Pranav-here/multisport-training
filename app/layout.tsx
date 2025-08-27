@@ -8,8 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
   title: "MultiSport - Train smarter across every sport",
-  description: "The all-in-one platform for multi-sport athletes to train, track progress, and compete.",
-  generator: "v0.app",
+  description: "The all-in-one platform for multi-sport athletes to train, track progress, and compete."
 }
 
 export default function RootLayout({
