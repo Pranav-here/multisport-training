@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -94,6 +94,7 @@ const steps = [
 
 export default function LandingPage() {
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [testiHover, setTestiHover] = useState(false)
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
@@ -103,23 +104,45 @@ export default function LandingPage() {
     setCurrentTestimonial((prev) => (prev - 1 + testimonials.length) % testimonials.length)
   }
 
+  // Auto-advance testimonials every 6s, pause on hover
+  useEffect(() => {
+    if (testiHover) return
+    const id = setInterval(nextTestimonial, 6000)
+    return () => clearInterval(id)
+  }, [testiHover])
+
   return (
     <div className="min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center">
+          <Link
+            href="/"
+            className="group flex items-center space-x-2 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+            aria-label="Home"
+          >
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
               <span className="text-white font-bold text-sm">MS</span>
             </div>
-            <span className="font-bold text-xl">MultiSport</span>
-          </div>
-          <div className="flex items-center space-x-4">
+            <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">MultiSport</span>
+          </Link>
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Link href="/login">
-              <Button variant="ghost">Log in</Button>
+              <Button
+                variant="ghost"
+                className="transition-transform duration-150 hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Log in"
+              >
+                Log in
+              </Button>
             </Link>
             <Link href="/login">
-              <Button>Get Started</Button>
+              <Button
+                className="transition-all duration-150 hover:translate-y-[-1px] hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Get Started"
+              >
+                Get Started
+              </Button>
             </Link>
           </div>
         </div>
@@ -128,22 +151,22 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted">
         {/* Background Videos/Images */}
-        <div className="absolute inset-0 grid grid-cols-3 gap-2 opacity-10">
+        <div className="absolute inset-0 grid grid-cols-3 gap-2 opacity-10 pointer-events-none">
           <div className="space-y-2">
-            <div className="aspect-video bg-gradient-to-br from-sport-blue/20 to-sport-green/20 rounded-lg flex items-center justify-center">
+            <div className="aspect-video bg-gradient-to-br from-sport-blue/20 to-sport-green/20 rounded-lg flex items-center justify-center motion-safe:transition-transform motion-safe:duration-300 hover:rotate-1 hover:scale-[1.02]">
               <Play className="h-8 w-8 text-sport-blue" />
             </div>
-            <div className="aspect-square bg-gradient-to-br from-sport-orange/20 to-sport-blue/20 rounded-lg"></div>
+            <div className="aspect-square bg-gradient-to-br from-sport-orange/20 to-sport-blue/20 rounded-lg motion-safe:transition-transform motion-safe:duration-300 hover:-rotate-1 hover:scale-[1.03]" />
           </div>
           <div className="space-y-2 mt-8">
-            <div className="aspect-square bg-gradient-to-br from-sport-green/20 to-sport-orange/20 rounded-lg"></div>
-            <div className="aspect-video bg-gradient-to-br from-sport-blue/20 to-sport-orange/20 rounded-lg flex items-center justify-center">
+            <div className="aspect-square bg-gradient-to-br from-sport-green/20 to-sport-orange/20 rounded-lg motion-safe:transition-transform motion-safe:duration-300 hover:rotate-1 hover:scale-[1.03]" />
+            <div className="aspect-video bg-gradient-to-br from-sport-blue/20 to-sport-orange/20 rounded-lg flex items-center justify-center motion-safe:transition-transform motion-safe:duration-300 hover:-rotate-1 hover:scale-[1.02]">
               <Play className="h-8 w-8 text-sport-green" />
             </div>
           </div>
           <div className="space-y-2">
-            <div className="aspect-video bg-gradient-to-br from-sport-orange/20 to-sport-green/20 rounded-lg"></div>
-            <div className="aspect-square bg-gradient-to-br from-sport-blue/20 to-sport-green/20 rounded-lg flex items-center justify-center">
+            <div className="aspect-video bg-gradient-to-br from-sport-orange/20 to-sport-green/20 rounded-lg motion-safe:transition-transform motion-safe:duration-300 hover:rotate-1 hover:scale-[1.02]" />
+            <div className="aspect-square bg-gradient-to-br from-sport-blue/20 to-sport-green/20 rounded-lg flex items-center justify-center motion-safe:transition-transform motion-safe:duration-300 hover:-rotate-1 hover:scale-[1.03]">
               <Play className="h-6 w-6 text-sport-orange" />
             </div>
           </div>
@@ -152,7 +175,7 @@ export default function LandingPage() {
         <div className="relative container px-4 py-24 text-center">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance mb-6">
             Train smarter across{" "}
-            <span className="bg-gradient-to-r from-sport-blue to-sport-green bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-sport-blue to-sport-green bg-clip-text text-transparent motion-safe:transition-opacity motion-safe:duration-300 hover:opacity-90">
               every sport
             </span>
           </h1>
@@ -162,12 +185,22 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/login">
-              <Button size="lg" className="text-lg px-8">
-                Get Started Free
+              <Button
+                size="lg"
+                className="group relative overflow-hidden text-lg px-8 transition-all duration-200 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Get Started Free"
+              >
+                <span className="relative z-10">Get Started Free</span>
+                <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
               </Button>
             </Link>
             <Link href="/login">
-              <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-lg px-8 bg-transparent transition-all duration-200 hover:shadow-sm hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                aria-label="Log In"
+              >
                 Log In
               </Button>
             </Link>
@@ -176,7 +209,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-24 bg-muted/50">
+      <section id="features" className="py-24 bg-muted/50">
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Everything you need to excel</h2>
@@ -188,15 +221,21 @@ export default function LandingPage() {
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue/10 to-sport-green/10 flex items-center justify-center mb-4">
-                      <Icon className="h-6 w-6 text-sport-blue" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground text-balance">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <div
+                  key={index}
+                  className="group relative rounded-xl p-[1px] bg-gradient-to-br from-sport-blue/20 via-transparent to-sport-green/20 transition-transform duration-200 hover:-translate-y-1"
+                >
+                  <Card className="relative border-0 shadow-sm hover:shadow-md transition-shadow rounded-[11px] overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue/10 to-sport-green/10 flex items-center justify-center mb-4 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-3">
+                        <Icon className="h-6 w-6 text-sport-blue" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground text-balance">{feature.description}</p>
+                    </CardContent>
+                    <span className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-tr from-transparent via-primary/5 to-transparent" />
+                  </Card>
+                </div>
               )
             })}
           </div>
@@ -204,21 +243,31 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24">
+      <section id="testimonials" className="py-24">
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by athletes everywhere</h2>
             <p className="text-xl text-muted-foreground">See what coaches and athletes are saying about MultiSport</p>
           </div>
           <div className="max-w-4xl mx-auto">
-            <Card className="border-0 shadow-lg">
+            <Card
+              className="border-0 shadow-lg transition-shadow duration-200 hover:shadow-xl"
+              onMouseEnter={() => setTestiHover(true)}
+              onMouseLeave={() => setTestiHover(false)}
+            >
               <CardContent className="p-8 text-center">
-                <blockquote className="text-xl md:text-2xl font-medium text-balance mb-6">
-                  "{testimonials[currentTestimonial].quote}"
+                <blockquote
+                  className="text-xl md:text-2xl font-medium text-balance mb-6 transition-opacity duration-300"
+                  aria-live="polite"
+                >
+                  “{testimonials[currentTestimonial].quote}”
                 </blockquote>
                 <div className="flex items-center justify-center space-x-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={testimonials[currentTestimonial].avatar || "/placeholder.svg"} />
+                  <Avatar className="h-12 w-12 ring-2 ring-transparent transition-all duration-300 hover:ring-primary/30">
+                    <AvatarImage
+                      src={testimonials[currentTestimonial].avatar || "/placeholder.svg"}
+                      alt={`${testimonials[currentTestimonial].name} avatar`}
+                    />
                     <AvatarFallback>
                       {testimonials[currentTestimonial].name
                         .split(" ")
@@ -234,21 +283,34 @@ export default function LandingPage() {
               </CardContent>
             </Card>
             <div className="flex justify-center items-center space-x-4 mt-8">
-              <Button variant="outline" size="icon" onClick={prevTestimonial}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={prevTestimonial}
+                className="transition-transform duration-150 hover:-translate-x-0.5"
+                aria-label="Previous testimonial"
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <div className="flex space-x-2">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
-                    className={`h-2 w-2 rounded-full transition-colors ${
-                      index === currentTestimonial ? "bg-primary" : "bg-muted"
+                    className={`h-2.5 w-2.5 rounded-full transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+                      index === currentTestimonial ? "bg-primary scale-110" : "bg-muted hover:bg-muted-foreground/40"
                     }`}
                     onClick={() => setCurrentTestimonial(index)}
+                    aria-label={`Show testimonial ${index + 1}`}
                   />
                 ))}
               </div>
-              <Button variant="outline" size="icon" onClick={nextTestimonial}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={nextTestimonial}
+                className="transition-transform duration-150 hover:translate-x-0.5"
+                aria-label="Next testimonial"
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -257,7 +319,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it Works */}
-      <section className="py-24 bg-muted/50">
+      <section id="how-it-works" className="py-24 bg-muted/50">
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">How it works</h2>
@@ -268,13 +330,16 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
               {steps.map((step, index) => (
-                <div key={index} className="flex items-start space-x-6">
+                <div
+                  key={index}
+                  className="group flex items-start space-x-6 rounded-lg p-2 transition-colors duration-150 hover:bg-muted"
+                >
                   <div className="flex-shrink-0">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center">
-                      <span className="text-white font-bold text-sm">{step.number}</span>
+                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center text-white font-bold text-sm transition-transform duration-150 group-hover:scale-105">
+                      {step.number}
                     </div>
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 transition-transform duration-150 group-hover:translate-x-0.5">
                     <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
                     <p className="text-muted-foreground text-balance">{step.description}</p>
                   </div>
@@ -293,8 +358,13 @@ export default function LandingPage() {
             Join thousands of multi-sport athletes who are already using MultiSport to reach their potential.
           </p>
           <Link href="/login">
-            <Button size="lg" className="text-lg px-8">
-              Start Training Today
+            <Button
+              size="lg"
+              className="group relative overflow-hidden text-lg px-8 transition-all duration-200 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              aria-label="Start Training Today"
+            >
+              <span className="relative z-10">Start Training Today</span>
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
             </Button>
           </Link>
         </div>
@@ -304,20 +374,24 @@ export default function LandingPage() {
       <footer className="border-t bg-muted/50 py-12">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center">
+            <Link
+              href="/"
+              className="group flex items-center space-x-2 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
+              aria-label="Home"
+            >
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
                 <span className="text-white font-bold text-sm">MS</span>
               </div>
-              <span className="font-bold text-xl">MultiSport</span>
-            </div>
+              <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">MultiSport</span>
+            </Link>
             <div className="flex space-x-6 text-sm text-muted-foreground">
-              <Link href="/about" className="hover:text-foreground">
+              <Link href="/about" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded">
                 About
               </Link>
-              <Link href="/guidelines" className="hover:text-foreground">
+              <Link href="/guidelines" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded">
                 Guidelines
               </Link>
-              <Link href="/settings" className="hover:text-foreground">
+              <Link href="/settings" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded">
                 Privacy
               </Link>
             </div>
