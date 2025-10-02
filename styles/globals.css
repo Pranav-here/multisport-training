@@ -118,6 +118,48 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    background-image: radial-gradient(120% 120% at 15% 20%, color-mix(in oklch, var(--accent) 28%, transparent), transparent 65%),
+      radial-gradient(160% 140% at 85% 10%, color-mix(in oklch, var(--primary) 18%, transparent), transparent 70%),
+      linear-gradient(180deg, color-mix(in oklch, var(--background) 85%, white 15%), color-mix(in oklch, var(--background) 90%, black 6%));
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background-image: radial-gradient(140% 120% at 20% 15%, color-mix(in oklch, var(--accent) 18%, transparent), transparent 70%),
+      radial-gradient(160% 160% at 80% 0%, color-mix(in oklch, var(--primary) 25%, transparent), transparent 75%),
+      linear-gradient(180deg, color-mix(in oklch, var(--background) 92%, black 8%), color-mix(in oklch, var(--background) 82%, black 18%));
+  }
+
+  /* subtle global transitions and hover improvements */
+  button, a {
+    transition-property: background-color, color, transform, box-shadow;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(.2,.8,.2,1);
+  }
+
+  .hover-pop {
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms;
+  }
+  .hover-pop:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(2,6,23,0.08);
   }
 }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: color-mix(in oklch, var(--background) 92%, transparent);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--primary) 22%, transparent);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklch, var(--primary) 35%, transparent);
+  }
+
