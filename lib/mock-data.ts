@@ -82,13 +82,13 @@ export const mockPosts: Post[] = [
     date: "2 hours ago",
     duration: "0:45",
     thumbnail: "/soccer-player-practicing-ball-control.png",
-    videoUrl: "/sample-soccer-drill.mp4",
+    videoUrl: "/soccer-player-practicing-ball-control.mp4",
     likes: 24,
     comments: 8,
     shares: 3,
     isLiked: false,
     isSaved: false,
-    drillId: "drill-1",
+    drillId: "soccer-1",
   },
   {
     id: "2",
@@ -102,13 +102,13 @@ export const mockPosts: Post[] = [
     date: "4 hours ago",
     duration: "1:12",
     thumbnail: "/basketball-player-jumping-for-dunk.png",
-    videoUrl: "/sample-basketball-drill.mp4",
+    videoUrl: "/basketball-player-jumping-for-dunk.mp4",
     likes: 31,
     comments: 12,
     shares: 5,
     isLiked: true,
     isSaved: true,
-    drillId: "drill-2",
+    drillId: "basketball-1",
   },
   {
     id: "3",
@@ -122,13 +122,13 @@ export const mockPosts: Post[] = [
     date: "6 hours ago",
     duration: "0:38",
     thumbnail: "/volleyball-player-serving-ball.png",
-    videoUrl: "/sample-volleyball-drill.mp4",
+    videoUrl: "/volleyball-player-serving-ball.mp4",
     likes: 18,
     comments: 6,
     shares: 2,
     isLiked: false,
     isSaved: false,
-    drillId: "drill-3",
+    drillId: "volleyball-1",
   },
   {
     id: "4",
@@ -142,13 +142,13 @@ export const mockPosts: Post[] = [
     date: "1 day ago",
     duration: "0:52",
     thumbnail: "/tennis-player-hitting-backhand-slice.png",
-    videoUrl: "/sample-tennis-drill.mp4",
+    videoUrl: "/tennis-player-hitting-backhand-slice.mp4",
     likes: 27,
     comments: 9,
     shares: 4,
     isLiked: true,
     isSaved: false,
-    drillId: "drill-4",
+    drillId: "tennis-1",
   },
 ]
 
@@ -244,17 +244,16 @@ export const mockTeamSessions: TeamSession[] = [
   },
 ]
 
-export const hashtagsOfTheDay = [
-  "#FirstTouchFriday",
-  "#MotivationMonday",
-  "#TechniqueThursday",
-  "#SkillSaturday",
-  "#WisdomWednesday",
-  "#TalentTuesday",
-  "#StrengthSunday",
-]
-
-export function getTodaysHashtag(): string {
-  const dayIndex = new Date().getDay()
-  return hashtagsOfTheDay[dayIndex]
+export interface HashtagInfo {
+  tag: string
+  description: string
 }
+
+export function getTodaysHashtag(): HashtagInfo {
+  return {
+    tag: '#SkillSaturday',
+    description: "Join the community and share your progress with today's hashtag!",
+  }
+}
+
+
