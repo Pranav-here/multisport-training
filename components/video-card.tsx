@@ -1,7 +1,8 @@
-"use client"
+﻿"use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -20,6 +21,18 @@ interface VideoCardProps {
 
 export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardProps) {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [thumbnailSrc, setThumbnailSrc] = useState(post.thumbnail || '/placeholder.svg')
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+
+  useEffect(() => {
+    setThumbnailSrc(post.thumbnail || '/placeholder.svg')
+  }, [post.thumbnail])
+
+  const handleThumbnailError = () => {
+    if (thumbnailSrc !== '/sports-training-video.png') {
+      setThumbnailSrc('/sports-training-video.png')
+    }
+  }
 
   const handleLike = () => {
     onLike?.(post.id)
@@ -71,12 +84,12 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
                 <p className="font-semibold text-sm">{post.userName}</p>
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                   <span className={getSportColor(post.sport)}>{post.sport}</span>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-3 w-3" />
                     <span>{post.location}</span>
                   </div>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <div className="flex items-center space-x-1">
                     <Clock className="h-3 w-3" />
                     <span>{post.date}</span>
@@ -102,21 +115,56 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
 
         {/* Video/Thumbnail */}
         <div className="relative aspect-[4/5] bg-muted">
-          <img
-            src={post.thumbnail || "/placeholder.svg"}
-            alt={post.caption}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = "/sports-training-video.png"
-            }}
-          />
+          {post.videoUrl ? (
+            <video
+              src={post.videoUrl}
+              poster={post.thumbnail || "/sports-training-video.png"}
+              className="w-full h-full object-cover"
+              muted
+              playsInline
+              loop
+              ref={(el) => {
+                videoRef.current = el
+                if (!el) return
+                if (isPlaying) el.play().catch(() => {})
+                else el.pause()
+              }}
+              onMouseEnter={() => {
+                setIsPlaying(true)
+                if (videoRef.current) videoRef.current.play().catch(() => {})
+              }}
+              onMouseLeave={() => {
+                setIsPlaying(false)
+                if (videoRef.current) videoRef.current.pause()
+              }}
+            />
+          ) : (
+            <Image
+              src={thumbnailSrc}
+              alt={post.caption || 'Training clip thumbnail'}
+              fill
+              className='object-cover'
+              sizes='(min-width: 1024px) 640px, (min-width: 768px) 50vw, 100vw'
+              onError={handleThumbnailError}
+            />
+          )}
           <div className="absolute inset-0 flex items-center justify-center">
             <Button
               size="icon"
-              className="h-16 w-16 rounded-full bg-black/50 hover:bg-black/70 text-white"
-              onClick={() => setIsPlaying(!isPlaying)}
+              className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white hover-pop"
+              onClick={() => {
+                // toggle play state
+                setIsPlaying((s) => {
+                  const next = !s
+                  if (videoRef.current) {
+                    if (next) videoRef.current.play().catch(() => {})
+                    else videoRef.current.pause()
+                  }
+                  return next
+                })
+              }}
             >
-              <Play className="h-8 w-8 ml-1" />
+              <Play className="h-6 w-6 ml-0.5" />
             </Button>
           </div>
           <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
