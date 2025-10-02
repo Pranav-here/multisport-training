@@ -1,132 +1,123 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useMemo, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 
-interface User {
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+
+interface ProfileRow {
+  id: string
+  username: string | null
+  display_name: string | null
+  avatar_url: string | null
+}
+
+interface AuthUser {
   id: string
   email: string
-  name: string
-  avatar: string
-  sports: string[]
-  location: string
-  affiliation: string
-  skillLevel: string
-  goals: string[]
-  privacy: "public" | "friends" | "private"
+  displayName: string
+  username: string | null
+  avatarUrl: string | null
 }
 
 interface AuthState {
-  user: User | null
-  isAuthenticated: boolean
+  session: Session | null
+  profile: ProfileRow | null
   isLoading: boolean
 }
 
 export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
+  const supabase = useMemo(() => getSupabaseBrowserClient(), [])
+  const [state, setState] = useState<AuthState>({
+    session: null,
+    profile: null,
     isLoading: true,
   })
 
-  useEffect(() => {
-    // Check for existing session on mount
-    const storedUser = localStorage.getItem("multisport_user")
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser)
-        setAuthState({
-          user,
-          isAuthenticated: true,
-          isLoading: false,
-        })
-      } catch {
-        localStorage.removeItem("multisport_user")
-        setAuthState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-        })
-      }
-    } else {
-      setAuthState((prev) => ({ ...prev, isLoading: false }))
-    }
-  }, [])
+  const loadProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, username, display_name, avatar_url')
+      .eq('id', userId)
+      .maybeSingle()
 
-  const login = (email: string, password: string) => {
-    // Fake login - in real app this would call an API
-    const mockUser: User = {
-      id: "1",
-      email,
-      name: email.split("@")[0],
-      avatar: "/diverse-user-avatars.png",
-      sports: [],
-      location: "",
-      affiliation: "",
-      skillLevel: "",
-      goals: [],
-      privacy: "public",
-    }
-
-    localStorage.setItem("multisport_user", JSON.stringify(mockUser))
-    setAuthState({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-    })
-
-    return Promise.resolve(mockUser)
-  }
-
-  const loginWithGoogle = () => {
-    // Fake Google login
-    const mockUser: User = {
-      id: "1",
-      email: "user@gmail.com",
-      name: "Demo User",
-      avatar: "/diverse-user-avatars.png",
-      sports: [],
-      location: "",
-      affiliation: "",
-      skillLevel: "",
-      goals: [],
-      privacy: "public",
-    }
-
-    localStorage.setItem("multisport_user", JSON.stringify(mockUser))
-    setAuthState({
-      user: mockUser,
-      isAuthenticated: true,
-      isLoading: false,
-    })
-
-    return Promise.resolve(mockUser)
-  }
-
-  const updateUser = (updates: Partial<User>) => {
-    if (!authState.user) return
-
-    const updatedUser = { ...authState.user, ...updates }
-    localStorage.setItem("multisport_user", JSON.stringify(updatedUser))
-    setAuthState((prev) => ({
+    setState((prev) => ({
       ...prev,
-      user: updatedUser,
+      profile: data ?? null,
     }))
   }
 
-  const logout = () => {
-    localStorage.removeItem("multisport_user")
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false,
+  useEffect(() => {
+    let isMounted = true
+
+    const syncSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (!isMounted) return
+
+      setState((prev) => ({
+        ...prev,
+        session: data.session,
+        isLoading: false,
+      }))
+
+      if (data.session) {
+        await loadProfile(data.session.user.id)
+      } else {
+        setState((prev) => ({ ...prev, profile: null }))
+      }
+    }
+
+    syncSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return
+      setState((prev) => ({
+        ...prev,
+        session,
+        isLoading: false,
+      }))
+      if (session) {
+        void loadProfile(session.user.id)
+      } else {
+        setState((prev) => ({ ...prev, profile: null }))
+      }
     })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase])
+
+  const user: AuthUser | null = useMemo(() => {
+    const session = state.session
+    if (!session) return null
+
+    const email = session.user.email ?? ''
+    const metadataName = session.user.user_metadata?.full_name
+    const profileName = state.profile?.display_name
+
+    return {
+      id: session.user.id,
+      email,
+      displayName: profileName ?? metadataName ?? email.split('@')[0] ?? 'Athlete',
+      username: state.profile?.username ?? null,
+      avatarUrl: state.profile?.avatar_url ?? session.user.user_metadata?.avatar_url ?? null,
+    }
+  }, [state.profile, state.session])
+
+  const refreshProfile = async () => {
+    if (state.session) {
+      await loadProfile(state.session.user.id)
+    }
   }
 
   return {
-    ...authState,
-    login,
-    loginWithGoogle,
-    updateUser,
-    logout,
+    session: state.session,
+    profile: state.profile,
+    user,
+    isAuthenticated: Boolean(state.session),
+    isLoading: state.isLoading,
+    refreshProfile,
   }
 }
