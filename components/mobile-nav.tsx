@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 const navItems = [
   {
     href: "/dashboard",
-    label: "Feed",
+    label: "Top posts today",
     icon: Home,
   },
   {
@@ -37,8 +37,11 @@ export function MobileNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
-      <div className="flex items-center justify-around py-2">
+    <nav
+      className="fixed bottom-4 left-1/2 z-50 w-[min(90%,420px)] -translate-x-1/2 rounded-2xl border border-border/60 bg-background/90 px-3 py-2 shadow-xl backdrop-blur-md md:hidden"
+      aria-label="Primary navigation"
+    >
+      <div className="flex items-center justify-between gap-1">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -47,13 +50,22 @@ export function MobileNav() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors",
-                isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground",
+                'group relative flex flex-1 flex-col items-center justify-center rounded-xl py-2 text-xs font-medium transition-colors',
+                isActive
+                  ? 'text-primary bg-primary/10 shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40'
               )}
             >
-              <Icon className="h-5 w-5 mb-1" />
-              <span className="text-xs font-medium">{item.label}</span>
+              <Icon className="mb-1 h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5" />
+              <span>{item.label}</span>
+              <span
+                className={cn(
+                  'absolute inset-x-5 bottom-1 h-1 rounded-full bg-primary/40 transition-opacity',
+                  isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'
+                )}
+              />
             </Link>
           )
         })}
