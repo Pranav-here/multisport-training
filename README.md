@@ -1,4 +1,4 @@
-# MultiSport: train smarter in every sport
+﻿# MultiSport: train smarter in every sport
 
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-14-black" alt="Next.js" />
@@ -9,50 +9,50 @@
   <img src="https://img.shields.io/badge/Vercel-Deploy-000000" alt="Vercel" />
 </p>
 
-> A clean, mobile‑first Next.js app for multi‑sport athletes. Video‑first progress, daily challenges, local leaderboards, and coach tools in one login. Built with TypeScript, Tailwind, and shadcn/ui. All data is placeholder for now, so you can iterate fast.
+> A clean, mobileâ€‘first Next.js app for multiâ€‘sport athletes. Videoâ€‘first progress, daily challenges, local leaderboards, and coach tools in one login. Built with TypeScript, Tailwind, and shadcn/ui. All data is placeholder for now, so you can iterate fast.
 
-## 🔗 Live preview
+## ðŸ”— Live preview
 
 https://v0-multi-sport-app-build.vercel.app/
 
-## ✨ What is in here right now
+## âœ¨ What is in here right now
 
-- Landing page with hero, feature grid, testimonials carousel, and “How it works” steps
-- Polished micro‑interactions (hover, focus visible, motion‑safe transitions)
+- Landing page with hero, feature grid, testimonials carousel, and â€œHow it worksâ€ steps
+- Polished microâ€‘interactions (hover, focus visible, motionâ€‘safe transitions)
 - Onboarding flow (4 steps)
   - Choose sports  
   - Location and affiliation
-  - Skill level and goals (sport‑specific goals, “All” filter chip)
+  - Skill level and goals (sportâ€‘specific goals, â€œAllâ€ filter chip)
   - Privacy and content step with a **Safe recording pledge**
 - Basic fake auth flow
-  - `/login` (click to “log in”)
+  - `/login` (click to â€œlog inâ€)
   - `AuthGuard` protects `/onboarding` and later routes
   - Session stored in `localStorage`, easy to replace later
 - A11y improvements: focus rings, readable labels, helper text when Next is disabled
 
-## 🧠 Product idea, in short
+## ðŸ§  Product idea, in short
 
-One app for multiple sports. Short clips, not long forms. Streaks, simple analytics, local leaderboards, and “one device coach mode” so a team can record attempts in sequence with a single phone.
+One app for multiple sports. Short clips, not long forms. Streaks, simple analytics, local leaderboards, and â€œone device coach modeâ€ so a team can record attempts in sequence with a single phone.
 
-## 🗺️ Routes
+## ðŸ—ºï¸ Routes
 
 - `/` Landing
 - `/login` Fake login (Google button is visual only for now)
 - `/onboarding` Sports, location, goals, privacy
 - `/dashboard` Placeholder route after onboarding
-- `/about` Project write‑up (Who, Where, Why, What, When) ready to fill
+- `/about` Project writeâ€‘up (Who, Where, Why, What, When) ready to fill
 - `/guidelines` Community standards and safety tips
 - `/settings` Privacy and account placeholders
 
-## 🧩 Tech stack
+## ðŸ§© Tech stack
 
 - Next.js 14 (App Router), React 18, TypeScript
 - Tailwind CSS with CSS variables for sport accent colors
 - shadcn/ui (Card, Button, Tabs, Badge, Checkbox, RadioGroup, Progress)
-- lucide‑react icons
+- lucideâ€‘react icons
 - Local state and a small `useAuth` hook, `useToast`, `AuthGuard`
 
-## 🛠️ Getting started
+## ðŸ› ï¸ Getting started
 
 > Requires Node 18+ and pnpm 10.x. Use Corepack to keep versions aligned with CI.
 
@@ -65,7 +65,7 @@ pnpm dev
 # open http://localhost:3000
 ```
 
-## 📦 Useful scripts
+## ðŸ“¦ Useful scripts
 
 ```bash
 pnpm dev        # run local dev server
@@ -74,7 +74,7 @@ pnpm start      # run built app
 pnpm lint       # lint
 ```
 
-## 🧭 Folder sketch
+## ðŸ§­ Folder sketch
 
 ```
 app/
@@ -96,23 +96,23 @@ public/
   placeholder assets (avatars, icons, clips)
 ```
 
-## 🧱 Design system
+## ðŸ§± Design system
 
 - Neutral base colors with light sport accents (blue, green, orange)
 - Minimal shadows, rounded corners, small hover lifts
-- Motion is opt‑in, respects `prefers-reduced-motion`
+- Motion is optâ€‘in, respects `prefers-reduced-motion`
 - Friendly tone, nothing weird, privacy first
 
-## 🔐 Safety and privacy
+## ðŸ” Safety and privacy
 
 - Safe recording pledge in onboarding
-- Do not film minors without a parent or legal guardian’s permission
+- Do not film minors without a parent or legal guardianâ€™s permission
 - Get consent before filming anyone, respect requests to stop
 - Avoid private info in clips or captions
 
-## 🚧 Roadmap (near term)
+## ðŸš§ Roadmap (near term)
 
-- “See live demo” button that fakes a session and routes to `/dashboard`
+- â€œSee live demoâ€ button that fakes a session and routes to `/dashboard`
 - Real Google OAuth
 - One device coach session flow with roster and queue
 - Local leaderboards with server data
@@ -120,7 +120,7 @@ public/
 - Simple analytics (load vs rest, accuracy trend)
 - Data export and delete account flows
 
-## 🧰 Vercel and pnpm notes
+## ðŸ§° Vercel and pnpm notes
 
 If Vercel fails with a frozen lockfile error, the lockfile and `package.json` are out of sync.
 
@@ -135,10 +135,30 @@ git commit -m "chore: sync lockfile"
 git push
 ```
 
-## 🤝 Contributing
+## ðŸ¤ Contributing
 
 Open a PR or drop issues. Keep copy simple, avoid hype, prefer real user value. Small PRs are better than huge ones.
 
-## 📝 License
+## ðŸ“ License
 
 MIT
+
+
+
+## Backend setup
+
+1. Install project dependencies with `npm install`.
+2. Start the local development server with `npm run dev`.
+3. Open your Supabase project dashboard, navigate to the SQL editor, paste the contents of `schema.sql`, and run it once.
+4. Sign in at `/login`, complete onboarding, and confirm that your profile appears without reload errors.
+5. Test the upload flow:
+   1. Call `POST /api/upload/create-url` with `{ "fileName": "clip.mp4", "contentType": "video/mp4", "fileSize": 10485760 }`.
+   2. PUT the file bytes to the signed URL you received.
+   3. Call `POST /api/clips` with the storage path from step 2 plus metadata (sport slug, caption, visibility).
+
+1. Install project dependencies with `npm install`.
+2. Start the local development server with `npm run dev`.
+3. Open your Supabase project dashboard, go to the SQL editor, paste the contents of `schema.sql`, and run the script once.
+4. Visit `/login`, authenticate with Google or a magic link, and complete onboarding to create your profile data.
+5. To test uploads: (a) call `POST /api/upload/create-url` with a JSON body like `{ "fileName": "clip.mp4", "contentType": "video/mp4", "fileSize": 10485760 }`, (b) use the returned signed URL to PUT your file bytes, (c) call `POST /api/clips` with the storage path from step b to register the clip.
+
