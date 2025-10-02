@@ -1,7 +1,8 @@
-"use client"
+﻿"use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -39,10 +40,26 @@ export default function DrillDetailPage() {
     notes: "",
   })
 
+  const [demoThumbnail, setDemoThumbnail] = useState('/placeholder.svg')
   // Find the drill from all sports
   const drill = Object.values(mockDrills)
     .flat()
     .find((d) => d.id === params.id)
+
+
+  useEffect(() => {
+    if (drill?.thumbnail) {
+      setDemoThumbnail(drill.thumbnail)
+    } else {
+      setDemoThumbnail('/placeholder.svg')
+    }
+  }, [drill?.thumbnail])
+
+  const handleDemoThumbnailError = () => {
+    if (demoThumbnail !== '/sports-drill-demo.png') {
+      setDemoThumbnail('/sports-drill-demo.png')
+    }
+  }
 
   if (!drill) {
     return (
@@ -177,13 +194,13 @@ export default function DrillDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    <img
-                      src={drill.thumbnail || "/placeholder.svg"}
+                    <Image
+                      src={demoThumbnail}
                       alt={drill.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = "/sports-drill-demo.png"
-                      }}
+                      fill
+                      className='object-cover'
+                      sizes='(min-width: 1024px) 640px, 100vw'
+                      onError={handleDemoThumbnailError}
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Button size="lg" className="h-16 w-16 rounded-full">
