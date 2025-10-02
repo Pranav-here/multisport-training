@@ -14,7 +14,9 @@ interface SidebarWidgetsProps {
   teamSessions: TeamSession[]
 }
 
-export function SidebarWidgets({ leaderboard, badges, teamSessions }: SidebarWidgetsProps) {
+export function SidebarWidgets({ leaderboard, badges, teamSessions, currentUserId, profileEditHref }: SidebarWidgetsProps) {
+  const resolvedProfileHref = profileEditHref ?? '/profile'
+
   return (
     <div className="space-y-6">
       {/* Mini Leaderboard */}
@@ -34,39 +36,58 @@ export function SidebarWidgets({ leaderboard, badges, teamSessions }: SidebarWid
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {leaderboard.slice(0, 3).map((entry) => (
-            <div key={entry.userId} className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <div
-                  className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    entry.rank === 1
-                      ? "bg-yellow-500 text-white"
-                      : entry.rank === 2
-                        ? "bg-gray-400 text-white"
-                        : entry.rank === 3
-                          ? "bg-amber-600 text-white"
-                          : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {entry.rank}
+          {leaderboard.slice(0, 3).map((entry) => {
+            const isCurrentUser = entry.userId === currentUserId
+            const displaySchool = entry.school?.trim()
+              ? entry.school
+              : isCurrentUser
+                ? 'Add your details'
+                : 'Not set'
+
+            return (
+              <div
+                key={entry.userId}
+                className={`flex items-center space-x-3 rounded-lg p-2 ${
+                  isCurrentUser ? 'border border-primary/40 bg-primary/5' : ''
+                }`}
+              >
+                <div className="flex-shrink-0">
+                  <div
+                    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      entry.rank === 1
+                        ? 'bg-yellow-500 text-white'
+                        : entry.rank === 2
+                          ? 'bg-gray-400 text-white'
+                          : entry.rank === 3
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {entry.rank}
+                  </div>
                 </div>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={entry.userAvatar || '/placeholder.svg'} alt={entry.userName} />
+                  <AvatarFallback className="text-xs">
+                    {entry.userName
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{entry.userName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{displaySchool}</p>
+                  {isCurrentUser && !entry.school?.trim() ? (
+                    <Link href={resolvedProfileHref} className="text-xs text-primary hover:underline">
+                      Complete profile
+                    </Link>
+                  ) : null}
+                </div>
+                <div className="text-sm font-semibold text-sport-blue">{entry.score}</div>
               </div>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={entry.userAvatar || "/placeholder.svg"} alt={entry.userName} />
-                <AvatarFallback className="text-xs">
-                  {entry.userName
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{entry.userName}</p>
-                <p className="text-xs text-muted-foreground">{entry.school}</p>
-              </div>
-              <div className="text-sm font-semibold text-sport-blue">{entry.score}</div>
-            </div>
-          ))}
+            )
+          })}
         </CardContent>
       </Card>
 
@@ -161,3 +182,4 @@ export function SidebarWidgets({ leaderboard, badges, teamSessions }: SidebarWid
     </div>
   )
 }
+
