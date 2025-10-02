@@ -23,8 +23,12 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-sm text-muted-foreground" role="status">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/40 bg-primary/5">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        </div>
+        <span>Preparing your experience...</span>
+        <span className="sr-only">Loading</span>
       </div>
     )
   }
@@ -35,3 +39,4 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
 
   return <>{children}</>
 }
+
