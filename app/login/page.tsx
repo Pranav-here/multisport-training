@@ -1,112 +1,142 @@
-"use client"
+'use client'
 
-import type React from "react"
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { useAuth } from "@/hooks/use-auth"
-import { useToast } from "@/hooks/use-toast"
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { useToast } from '@/hooks/use-toast'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { login, loginWithGoogle } = useAuth()
+  const [email, setEmail] = useState('')
+  const [isOauthLoading, setIsOauthLoading] = useState(false)
+  const [isMagicLoading, setIsMagicLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = useMemo(() => getSupabaseBrowserClient(), [])
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email || !password) {
+  useEffect(() => {
+    if (searchParams?.get('error') === 'auth') {
       toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
+        title: 'Authentication error',
+        description: 'Please try signing in again.',
+        variant: 'destructive',
+      })
+    }
+  }, [searchParams, toast])
+
+  const buildCallbackUrl = (nextPath: string) => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    if (!origin) {
+      return undefined
+    }
+    const url = new URL('/api/auth/callback', origin)
+    url.searchParams.set('next', nextPath)
+    return url.toString()
+  }
+
+  const handleGoogleLogin = async () => {
+    setIsOauthLoading(true)
+    try {
+      const redirectTo = buildCallbackUrl('/dashboard')
+      if (!redirectTo) {
+        throw new Error('Unable to determine redirect target.')
+      }
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      })
+      if (error) {
+        toast({
+          title: 'Google sign-in failed',
+          description: error.message,
+          variant: 'destructive',
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Google sign-in failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsOauthLoading(false)
+    }
+  }
+
+  const handleMagicLink = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!email) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address to receive a magic link.',
+        variant: 'destructive',
       })
       return
     }
 
-    setIsLoading(true)
+    setIsMagicLoading(true)
     try {
-      await login(email, password)
-      toast({
-        title: "Welcome back!",
-        description: "You've been successfully logged in.",
+      const redirectTo = buildCallbackUrl('/onboarding')
+      if (!redirectTo) {
+        throw new Error('Unable to determine redirect target.')
+      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: redirectTo },
       })
-      router.push("/onboarding")
+      if (error) {
+        throw error
+      }
+      toast({
+        title: 'Check your inbox',
+        description: 'We sent you a magic link to sign in.',
+      })
+      router.push('/login')
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: "Please check your credentials and try again.",
-        variant: "destructive",
+        title: 'Magic link failed',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
       })
     } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true)
-    try {
-      await loginWithGoogle()
-      toast({
-        title: "Welcome!",
-        description: "You've been successfully logged in with Google.",
-      })
-      router.push("/onboarding")
-    } catch (error) {
-      toast({
-        title: "Login failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      setIsMagicLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
-      <Card className="w-full max-w-md">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/60 p-4">
+      <span className="pointer-events-none absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl transition-all dark:bg-primary/10" aria-hidden="true" />
+      <Card className="w-full max-w-md backdrop-blur-sm bg-card/95 shadow-2xl">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center">
             <span className="text-white font-bold text-lg">MS</span>
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your MultiSport account to continue training</CardDescription>
+          <CardDescription>Sign in to continue training with MultiSport.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleEmailLogin} className="space-y-4">
+          <form onSubmit={handleMagicLink} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
+                onChange={(event) => setEmail(event.target.value)}
+                disabled={isMagicLoading || isOauthLoading}
+                required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+            <Button type="submit" className="w-full" disabled={isMagicLoading || isOauthLoading}>
+              {isMagicLoading ? 'Sending magic link...' : 'Send magic link'}
             </Button>
           </form>
 
@@ -119,8 +149,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button variant="outline" className="w-full bg-transparent" onClick={handleGoogleLogin} disabled={isLoading}>
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full bg-transparent"
+            onClick={handleGoogleLogin}
+            disabled={isOauthLoading || isMagicLoading}
+          >
+            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                 fill="#4285F4"
@@ -138,11 +174,11 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {isOauthLoading ? 'Redirecting...' : 'Continue with Google'}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{' '}
             <Link href="/" className="text-primary hover:underline">
               Get started
             </Link>
