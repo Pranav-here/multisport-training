@@ -1,3 +1,7 @@
+'use client'
+
+import { useEffect, useMemo, useState } from "react"
+
 import { AuthGuard } from "@/components/auth-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +13,99 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { User, Bell, Shield, Trash2, Download, LogOut } from "lucide-react"
 
+import { useAuth } from "@/hooks/use-auth"
+import { useToast } from "@/hooks/use-toast"
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
+
 export default function SettingsPage() {
+  const { toast } = useToast()
+  const supabase = useMemo(() => getSupabaseBrowserClient(), [])
+  const { user, profile, session, refreshProfile } = useAuth()
+
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [location, setLocation] = useState("")
+
+  const [initialFirstName, setInitialFirstName] = useState("")
+  const [initialLastName, setInitialLastName] = useState("")
+  const [initialLocation, setInitialLocation] = useState("")
+
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+
+  useEffect(() => {
+    const displayName = (user?.displayName ?? "").trim()
+    const [first, ...rest] = displayName ? displayName.split(/\s+/) : [""]
+    const last = rest.join(" ")
+    const locationValue = profile?.location ?? ""
+
+    setFirstName(first ?? "")
+    setLastName(last ?? "")
+    setLocation(locationValue ?? "")
+
+    setInitialFirstName(first ?? "")
+    setInitialLastName(last ?? "")
+    setInitialLocation(locationValue ?? "")
+  }, [user?.id, user?.displayName, profile?.id, profile?.location])
+
+  const email = session?.user?.email ?? ""
+
+  const isProfileDirty =
+    firstName !== initialFirstName ||
+    lastName !== initialLastName ||
+    location !== initialLocation
+
+  const handleProfileSave = async () => {
+    if (!session?.user) {
+      toast({
+        title: "Not signed in",
+        description: "Please sign in to update your profile.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const safeFirst = firstName.trim()
+    const safeLast = lastName.trim()
+    const safeLocation = location.trim()
+    const displayName = [safeFirst, safeLast].filter(Boolean).join(" ") || email || "Athlete"
+
+    setIsSavingProfile(true)
+    try {
+      const { error } = await supabase.from("profiles").upsert({
+        id: session.user.id,
+        display_name: displayName,
+        location: safeLocation || null,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      setFirstName(safeFirst)
+      setLastName(safeLast)
+      setLocation(safeLocation)
+      setInitialFirstName(safeFirst)
+      setInitialLastName(safeLast)
+      setInitialLocation(safeLocation)
+
+      await refreshProfile()
+
+      toast({
+        title: "Profile updated",
+        description: "Your changes were saved.",
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Something went wrong. Try again."
+      toast({
+        title: "Unable to save profile",
+        description: message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsSavingProfile(false)
+    }
+  }
+
   return (
     <AuthGuard>
       <div className="container mx-auto px-4 py-6 pb-20 md:pb-6 space-y-6">
@@ -35,36 +131,41 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
-                    <Input id="firstName" defaultValue="Alex" />
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(event) => setFirstName(event.target.value)}
+                      placeholder="Jordan"
+                    />
                   </div>
                   <div>
                     <Label htmlFor="lastName">Last Name</Label>
-                    <Input id="lastName" defaultValue="Johnson" />
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(event) => setLastName(event.target.value)}
+                      placeholder="Taylor"
+                    />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="alex.johnson@email.com" />
+                  <Input id="email" type="email" value={email} readOnly disabled />
                 </div>
                 <div>
                   <Label htmlFor="location">Location</Label>
-                  <Input id="location" defaultValue="San Francisco, CA" />
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(event) => setLocation(event.target.value)}
+                    placeholder="Austin, TX"
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="timezone">Timezone</Label>
-                  <Select defaultValue="pst">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pst">Pacific Standard Time</SelectItem>
-                      <SelectItem value="mst">Mountain Standard Time</SelectItem>
-                      <SelectItem value="cst">Central Standard Time</SelectItem>
-                      <SelectItem value="est">Eastern Standard Time</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Button onClick={handleProfileSave} disabled={!isProfileDirty || isSavingProfile}>
+                    {isSavingProfile ? "Saving..." : "Save Changes"}
+                  </Button>
                 </div>
-                <Button>Save Changes</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -107,15 +208,7 @@ export default function SettingsPage() {
                     <h4 className="font-medium">Weekly Summary</h4>
                     <p className="text-sm text-muted-foreground">Receive weekly progress reports</p>
                   </div>
-                  <Switch />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium">Marketing Emails</h4>
-                    <p className="text-sm text-muted-foreground">Tips, features, and product updates</p>
-                  </div>
-                  <Switch />
+                  <Switch defaultChecked />
                 </div>
               </CardContent>
             </Card>
