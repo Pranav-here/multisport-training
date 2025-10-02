@@ -207,7 +207,7 @@ export default function TeamsPage() {
                       <Label htmlFor="location">Location *</Label>
                       <Input
                         id="location"
-                        placeholder="Field A - Lincoln High School"
+                        placeholder="Field A- Lincoln High School"
                         value={newSession.location}
                         onChange={(e) => setNewSession((prev) => ({ ...prev, location: e.target.value }))}
                       />
@@ -368,25 +368,25 @@ export default function TeamsPage() {
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm">Privacy & Consent</h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>• Always get permission before recording anyone</li>
-                    <li>• Respect those who don't want to be filmed</li>
-                    <li>• Only share content with explicit consent</li>
+                    <li>- Always get permission before recording anyone</li>
+                    <li>- Respect those who do not want to be filmed</li>
+                    <li>- Only share content with explicit consent</li>
                   </ul>
                 </div>
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm">Safe Recording Angles</h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>• Focus on technique and form, not individuals</li>
-                    <li>• Avoid close-ups of faces without permission</li>
-                    <li>• Keep recordings appropriate and sports-focused</li>
+                    <li>- Focus on technique and form, not individuals</li>
+                    <li>- Avoid close-ups of faces without permission</li>
+                    <li>- Keep recordings appropriate and sports-focused</li>
                   </ul>
                 </div>
                 <div className="space-y-3">
                   <h4 className="font-semibold text-sm">Group Session Safety</h4>
                   <ul className="space-y-1 text-sm text-muted-foreground">
-                    <li>• Ensure adequate space between participants</li>
-                    <li>• Have first aid available during sessions</li>
-                    <li>• Stop immediately if anyone gets injured</li>
+                    <li>- Ensure adequate space between participants</li>
+                    <li>- Have first aid available during sessions</li>
+                    <li>- Stop immediately if anyone gets injured</li>
                   </ul>
                 </div>
               </div>
