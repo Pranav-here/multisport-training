@@ -10,6 +10,7 @@ interface ProfileRow {
   username: string | null
   display_name: string | null
   avatar_url: string | null
+  location: string | null
 }
 
 interface AuthUser {
@@ -37,7 +38,7 @@ export function useAuth() {
   const loadProfile = async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('id, username, display_name, avatar_url')
+      .select('id, username, display_name, avatar_url, location')
       .eq('id', userId)
       .maybeSingle()
 
@@ -121,3 +122,5 @@ export function useAuth() {
     refreshProfile,
   }
 }
+
+
