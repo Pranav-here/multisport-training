@@ -1,11 +1,16 @@
-﻿import { createBrowserClient } from '@supabase/ssr'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 import type { Database } from '@/types/database'
 
-let browserClient: SupabaseClient<Database> | null = null
+function initBrowserClient(supabaseUrl: string, supabaseAnonKey: string) {
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+}
 
-export function getSupabaseBrowserClient(): SupabaseClient<Database> {
+export type SupabaseBrowserClient = ReturnType<typeof initBrowserClient>
+
+let browserClient: SupabaseBrowserClient | null = null
+
+export function getSupabaseBrowserClient(): SupabaseBrowserClient {
   if (browserClient) {
     return browserClient
   }
@@ -17,7 +22,8 @@ export function getSupabaseBrowserClient(): SupabaseClient<Database> {
     throw new Error('Supabase browser environment variables are not configured.')
   }
 
-  browserClient = createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
+  browserClient = initBrowserClient(supabaseUrl, supabaseAnonKey)
 
   return browserClient
 }
+
