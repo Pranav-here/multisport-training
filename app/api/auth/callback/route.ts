@@ -2,9 +2,18 @@ import { NextResponse } from 'next/server'
 
 import { createServerClient } from '@/lib/supabase-server'
 import type { Database } from '@/types/database'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
+
+type ProfilesClient = {
+  from(table: 'profiles'): {
+    upsert(values: ProfileInsert, options?: { onConflict?: string }): {
+      select(columns: string): {
+        maybeSingle<T>(): Promise<{ data: T | null; error: unknown }>
+      }
+    }
+  }
+}
 
 function resolveRedirectPath(candidate: string | null | undefined) {
   if (!candidate) {
@@ -27,8 +36,7 @@ export async function GET(request: Request) {
   }
 
   const response = NextResponse.redirect(new URL('/dashboard', request.url))
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient({ response }) as SupabaseClient<any>
+  const supabase = createServerClient({ response })
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
   if (exchangeError) {
@@ -71,7 +79,8 @@ export async function GET(request: Request) {
         avatar_url: typeof user.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : null,
       }
 
-      const { data: upsertedProfile, error: upsertError } = await supabase
+      const profilesClient = supabase as unknown as ProfilesClient
+      const { data: upsertedProfile, error: upsertError } = await profilesClient
         .from('profiles')
         .upsert(defaultProfile, { onConflict: 'id' })
         .select('id')
@@ -95,3 +104,4 @@ export async function GET(request: Request) {
   response.headers.set('Location', finalUrl.toString())
   return response
 }
+
