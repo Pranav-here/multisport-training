@@ -12,6 +12,8 @@ interface SidebarWidgetsProps {
   leaderboard: LeaderboardEntry[]
   badges: BadgeType[]
   teamSessions: TeamSession[]
+  currentUserId?: string
+  profileEditHref?: string
 }
 
 export function SidebarWidgets({ leaderboard, badges, teamSessions, currentUserId, profileEditHref }: SidebarWidgetsProps) {
