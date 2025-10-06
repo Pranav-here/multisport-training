@@ -1,9 +1,9 @@
-﻿import { z } from 'zod'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 
 import { respondError, respondOk } from '@/lib/api-response'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { createServerClient } from '@/lib/supabase-server'
+import type { Database } from '@/types/database'
 
 const paramsSchema = z.object({
   id: z.string().uuid({ message: 'Invalid clip id' }),
@@ -11,16 +11,26 @@ const paramsSchema = z.object({
 
 const ACTION_WINDOW_MS = 1_000
 
-export async function POST(request: Request, context: { params: { id: string } }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+type ClipLikeRouteContext = { readonly params: Promise<{ readonly id: string }> }
+
+type ClipLikeInsert = Database['public']['Tables']['clip_likes']['Insert']
+
+type ClipLikesClient = {
+  from(table: 'clip_likes'): {
+    insert(values: ClipLikeInsert): Promise<{ error: unknown }>
+  }
+}
+
+export async function POST(request: Request, { params }: ClipLikeRouteContext) {
+  const supabase = createServerClient()
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {
     return respondError('UNAUTHORIZED', 'Sign in required.', 401)
   }
 
-  const parsed = paramsSchema.safeParse(context.params)
+  const routeParams = await params
+  const parsed = paramsSchema.safeParse(routeParams)
   if (!parsed.success) {
     return respondError('INVALID_PARAMS', 'Invalid clip id.', 400)
   }
@@ -62,7 +72,8 @@ export async function POST(request: Request, context: { params: { id: string } }
       return respondError('DATABASE_ERROR', 'Unable to toggle like right now.', 500)
     }
   } else {
-    const { error: insertError } = await supabase
+    const clipLikesClient = supabase as unknown as ClipLikesClient
+    const { error: insertError } = await clipLikesClient
       .from('clip_likes')
       .insert({ clip_id: clipId, user_id: userId })
 
