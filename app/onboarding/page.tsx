@@ -1,6 +1,5 @@
-﻿'use client'
+'use client'
 
-import type { SupabaseClient } from "@supabase/supabase-js"
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -15,7 +14,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import type { Database } from '@/types/database'
+import { getSupabaseBrowserClient, type SupabaseBrowserClient } from '@/lib/supabase-browser'
 
 const defaultSports = [
   { slug: 'basketball', name: 'Basketball', summary: 'Ball handling, shooting and footwork drills.' },
@@ -55,11 +55,28 @@ interface SportOption {
   summary: string
 }
 
+type SportRow = Pick<Database['public']['Tables']['sports']['Row'], 'id' | 'slug' | 'name'>
+
+type ProfilesInsert = Database['public']['Tables']['profiles']['Insert']
+
+type ProfilesClient = {
+  from(table: 'profiles'): {
+    upsert(values: ProfilesInsert): Promise<{ error: unknown }>
+  }
+}
+
+type UserSportsInsert = Database['public']['Tables']['user_sports']['Insert']
+
+type UserSportsClient = {
+  from(table: 'user_sports'): {
+    insert(values: UserSportsInsert[]): Promise<{ error: unknown }>
+  }
+}
+
 export default function OnboardingPage() {
   const { toast } = useToast()
   const router = useRouter()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = useMemo(() => getSupabaseBrowserClient() as SupabaseClient<any>, [])
+  const supabase = useMemo<SupabaseBrowserClient>(() => getSupabaseBrowserClient(), [])
   const { session, refreshProfile } = useAuth()
 
   const [sports, setSports] = useState<SportOption[]>([])
@@ -108,8 +125,9 @@ export default function OnboardingPage() {
         return
       }
 
+      const rows = data as SportRow[]
       const map: Record<string, number> = {}
-      const options: SportOption[] = data.map((row) => {
+      const options: SportOption[] = rows.map((row) => {
         map[row.slug] = row.id
         const fallback = defaultSports.find((item) => item.slug === row.slug)
         return {
@@ -202,13 +220,17 @@ export default function OnboardingPage() {
       if (affiliation.trim()) profileBioParts.push(`Team: ${affiliation.trim()}`)
       profileBioParts.push(`Privacy: ${privacy}`)
 
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: session.user.id,
-        display_name: finalName,
-        username: username || null,
-        location: location.trim() || null,
-        bio: profileBioParts.join(' | ') || null,
-      })
+      // Supabase type defs misalign with Next.js 15 route builds; manually narrow profiles client.
+      const profilesClient = supabase as unknown as ProfilesClient
+      const { error: profileError } = await profilesClient
+        .from('profiles')
+        .upsert({
+          id: session.user.id,
+          display_name: finalName,
+          username: username || null,
+          location: location.trim() || null,
+          bio: profileBioParts.join(' | ') || null,
+        })
 
       if (profileError) {
         throw profileError
@@ -228,14 +250,17 @@ export default function OnboardingPage() {
       }
 
       if (sportIds.length) {
-        const rows = sportIds.map((id) => ({
+        const rows: UserSportsInsert[] = sportIds.map((id) => ({
           user_id: session.user.id,
           sport_id: id,
           skill_level: skillLevel,
           goals: selectedGoals.join(', ') || null,
         }))
 
-        const { error: insertError } = await supabase.from('user_sports').insert(rows)
+        const userSportsClient = supabase as unknown as UserSportsClient
+        const { error: insertError } = await userSportsClient
+          .from('user_sports')
+          .insert(rows)
         if (insertError) {
           throw insertError
         }
@@ -431,3 +456,13 @@ export default function OnboardingPage() {
     </AuthGuard>
   )
 }
+
+
+
+
+
+
+
+
+
+
