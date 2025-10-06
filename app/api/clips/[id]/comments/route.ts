@@ -1,19 +1,36 @@
-﻿import { z } from 'zod'
-import type { SupabaseClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 
 import { respondError, respondOk } from '@/lib/api-response'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { createServerClient } from '@/lib/supabase-server'
+import type { Database } from '@/types/database'
 
 const paramsSchema = z.object({ id: z.string().uuid({ message: 'Invalid clip id' }) })
 const postSchema = z.object({ body: z.string().min(1).max(300) })
 
 const ACTION_WINDOW_MS = 1_000
 
-export async function GET(request: Request, context: { params: { id: string } }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
-  const parsed = paramsSchema.safeParse(context.params)
+type ClipCommentsRouteContext = { readonly params: Promise<{ readonly id: string }> }
+
+type ClipCommentInsert = Database['public']['Tables']['clip_comments']['Insert']
+type ClipCommentRow = Database['public']['Tables']['clip_comments']['Row']
+
+type ClipCommentsClient = {
+  from(table: 'clip_comments'): {
+    insert(values: ClipCommentInsert): {
+      select(columns: string): {
+        single(): Promise<{ data: ClipCommentRow | null; error: unknown }>
+      }
+    }
+  }
+}
+
+type ProfileSummary = Pick<Database['public']['Tables']['profiles']['Row'], 'display_name' | 'username' | 'avatar_url'>
+
+export async function GET(request: Request, { params }: ClipCommentsRouteContext) {
+  const supabase = createServerClient()
+  const routeParams = await params
+  const parsed = paramsSchema.safeParse(routeParams)
 
   if (!parsed.success) {
     return respondError('INVALID_PARAMS', 'Invalid clip id.', 400)
@@ -76,17 +93,17 @@ export async function GET(request: Request, context: { params: { id: string } })
   })
 }
 
-export async function POST(request: Request, context: { params: { id: string } }) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+export async function POST(request: Request, { params }: ClipCommentsRouteContext) {
+  const supabase = createServerClient()
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {
     return respondError('UNAUTHORIZED', 'Sign in required.', 401)
   }
 
-  const params = paramsSchema.safeParse(context.params)
-  if (!params.success) {
+  const routeParams = await params
+  const parsedParams = paramsSchema.safeParse(routeParams)
+  if (!parsedParams.success) {
     return respondError('INVALID_PARAMS', 'Invalid clip id.', 400)
   }
 
@@ -99,7 +116,7 @@ export async function POST(request: Request, context: { params: { id: string } }
     })
   }
 
-  const clipId = params.data.id
+  const clipId = parsedParams.data.id
   const userId = auth.session.user.id
   const content = parsedBody.data.body.trim()
 
@@ -115,7 +132,8 @@ export async function POST(request: Request, context: { params: { id: string } }
     })
   }
 
-  const { data: insertData, error: insertError } = await supabase
+  const clipCommentsClient = supabase as unknown as ClipCommentsClient
+  const { data: insertData, error: insertError } = await clipCommentsClient
     .from('clip_comments')
     .insert({ clip_id: clipId, user_id: userId, body: content })
     .select('id, body, created_at, user_id')
@@ -130,7 +148,7 @@ export async function POST(request: Request, context: { params: { id: string } }
     .from('profiles')
     .select('display_name, username, avatar_url')
     .eq('id', userId)
-    .maybeSingle()
+    .maybeSingle<ProfileSummary>()
 
   if (profileError) {
     console.error('[api/clips/comments] profile', profileError)
