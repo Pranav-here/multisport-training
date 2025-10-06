@@ -15,11 +15,20 @@ import { User, Bell, Shield, Trash2, Download, LogOut } from "lucide-react"
 
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser"
+import { getSupabaseBrowserClient, type SupabaseBrowserClient } from "@/lib/supabase-browser"
+import type { Database } from "@/types/database"
+
+type ProfilesInsert = Database['public']['Tables']['profiles']['Insert']
+
+type ProfilesClient = {
+  from(table: 'profiles'): {
+    upsert(values: ProfilesInsert): Promise<{ error: unknown }>
+  }
+}
 
 export default function SettingsPage() {
   const { toast } = useToast()
-  const supabase = useMemo(() => getSupabaseBrowserClient(), [])
+  const supabase = useMemo<SupabaseBrowserClient>(() => getSupabaseBrowserClient(), [])
   const { user, profile, session, refreshProfile } = useAuth()
 
   const [firstName, setFirstName] = useState("")
@@ -71,7 +80,8 @@ export default function SettingsPage() {
 
     setIsSavingProfile(true)
     try {
-      const { error } = await supabase.from("profiles").upsert({
+      const profilesClient = supabase as unknown as ProfilesClient
+      const { error } = await profilesClient.from('profiles').upsert({
         id: session.user.id,
         display_name: displayName,
         location: safeLocation || null,
@@ -319,3 +329,4 @@ export default function SettingsPage() {
     </AuthGuard>
   )
 }
+
