@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import type { SupabaseClient } from '@supabase/supabase-js'
 
 import { Plus, Hash } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -18,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
-import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import { getSupabaseBrowserClient, type SupabaseBrowserClient } from '@/lib/supabase-browser'
 import {
   mockChallenge,
   mockLeaderboard,
@@ -132,8 +131,7 @@ export default function DashboardPage() {
   const { toast } = useToast()
   const { session, user: authUser, profile } = useAuth()
   const profileUsername = profile?.username ?? ''
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = useMemo(() => getSupabaseBrowserClient() as SupabaseClient<any>, [])
+  const supabase = useMemo<SupabaseBrowserClient>(() => getSupabaseBrowserClient(), [])
   const hashtag = useMemo<HashtagInfo>(() => getTodaysHashtag(), [])
 
   const injectCurrentUser = useCallback((entries: LeaderboardEntry[]) => {
@@ -516,3 +514,6 @@ export default function DashboardPage() {
     </AuthGuard>
   )
 }
+
+
+
