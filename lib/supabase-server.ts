@@ -1,7 +1,7 @@
 import 'server-only'
 
 import { cookies } from 'next/headers'
-import { createClient as createSupabaseClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient as createSupabaseServerClient, type CookieOptions } from '@supabase/ssr'
 
 import type { Database } from '@/types/database'
@@ -25,7 +25,7 @@ export interface CreateServerClientOptions {
   response?: import('next/server').NextResponse
 }
 
-export function createServerClient({ response }: CreateServerClientOptions = {}): SupabaseClient<Database> {
+export function createServerClient({ response }: CreateServerClientOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cookieStore = cookies() as any & {
     set?: (cookie: { name: string; value: string } & CookieOptions) => void
@@ -59,7 +59,7 @@ export function createServerClient({ response }: CreateServerClientOptions = {})
  * Server-only helper to perform privileged operations such as storage signing.
  * Always wrap usage in trusted server paths. Never expose the service role key to clients.
  */
-export function createAdminClient(): SupabaseClient<Database> {
+export function createAdminClient() {
   if (!supabaseServiceRoleKey) {
     throw new Error('Supabase service role key is not configured.')
   }
@@ -70,4 +70,5 @@ export function createAdminClient(): SupabaseClient<Database> {
     },
   })
 }
+
 
