@@ -10,7 +10,9 @@ const postSchema = z.object({ body: z.string().min(1).max(300) })
 
 const ACTION_WINDOW_MS = 1_000
 
-type ClipCommentsRouteContext = { readonly params: Promise<{ readonly id: string }> }
+// Next.js 15 route handlers receive a `context` with `params` directly,
+// not a Promise. Adjust the type to match the runtime.
+type ClipCommentsRouteContext = { readonly params: { readonly id: string } }
 
 type ClipCommentInsert = Database['public']['Tables']['clip_comments']['Insert']
 type ClipCommentRow = Database['public']['Tables']['clip_comments']['Row']
@@ -29,8 +31,7 @@ type ProfileSummary = Pick<Database['public']['Tables']['profiles']['Row'], 'dis
 
 export async function GET(request: Request, { params }: ClipCommentsRouteContext) {
   const supabase = createServerClient()
-  const routeParams = await params
-  const parsed = paramsSchema.safeParse(routeParams)
+  const parsed = paramsSchema.safeParse(params)
 
   if (!parsed.success) {
     return respondError('INVALID_PARAMS', 'Invalid clip id.', 400)
@@ -101,8 +102,7 @@ export async function POST(request: Request, { params }: ClipCommentsRouteContex
     return respondError('UNAUTHORIZED', 'Sign in required.', 401)
   }
 
-  const routeParams = await params
-  const parsedParams = paramsSchema.safeParse(routeParams)
+  const parsedParams = paramsSchema.safeParse(params)
   if (!parsedParams.success) {
     return respondError('INVALID_PARAMS', 'Invalid clip id.', 400)
   }
