@@ -150,6 +150,27 @@ export const mockPosts: Post[] = [
     isSaved: false,
     drillId: "tennis-1",
   },
+  {
+    id: "5",
+    userId: "coach-james",
+    userName: "James Frampton",
+    userAvatar: "/diverse-user-avatars.png",
+    sport: "Strength Training",
+    caption:
+      "Coach James breaks down the lateral raise: shoulders pinned down, lead with your elbows, and extend farther as you build control.",
+    tags: ["TryThisDrill", "LateralRaise", "ShoulderStrength", "StrengthTraining"],
+    location: "Alpha Sigs Gym",
+    date: "Today",
+    duration: "0:30",
+    thumbnail: "/sports-training-video.png",
+    videoUrl: "/james-tiktok.mp4",
+    likes: 14,
+    comments: 5,
+    shares: 3,
+    isLiked: false,
+    isSaved: false,
+    drillId: "strength-shoulder-raise",
+  },
 ]
 
 export const mockChallenge: Challenge = {
