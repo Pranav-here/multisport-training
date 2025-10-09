@@ -23,7 +23,7 @@ const uploadSchema = z.object({
 
 export async function POST(request: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+  const supabase = createServerClient() as unknown as SupabaseClient<any>
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {
