@@ -21,7 +21,7 @@ import { Header } from "@/components/header"
 import { MobileNav } from "@/components/mobile-nav"
 import { AuthGuard } from "@/components/auth-guard"
 import { mockDrills } from "@/lib/drill-data"
-import { Play, Clock, Target, AlertTriangle, Lightbulb, Video, ArrowLeft, Plus } from "lucide-react"
+import { Clock, Target, AlertTriangle, Lightbulb, Video, ArrowLeft, Plus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
@@ -194,19 +194,27 @@ export default function DrillDetailPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    <Image
-                      src={demoThumbnail}
-                      alt={drill.title}
-                      fill
-                      className='object-cover'
-                      sizes='(min-width: 1024px) 640px, 100vw'
-                      onError={handleDemoThumbnailError}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Button size="lg" className="h-16 w-16 rounded-full">
-                        <Play className="h-8 w-8 ml-1" />
-                      </Button>
-                    </div>
+                    {drill.videoUrl ? (
+                      <video
+                        key={drill.videoUrl}
+                        controls
+                        preload="metadata"
+                        className="h-full w-full object-cover"
+                        poster={demoThumbnail}
+                      >
+                        <source src={drill.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <Image
+                        src={demoThumbnail}
+                        alt={drill.title}
+                        fill
+                        className="object-cover"
+                        sizes="(min-width: 1024px) 640px, 100vw"
+                        onError={handleDemoThumbnailError}
+                      />
+                    )}
                   </div>
                   <div className="mt-4 flex flex-col sm:flex-row gap-3">
                     <Button className="flex-1" onClick={handleRecordAttempt} disabled={isRecording}>
