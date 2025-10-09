@@ -10,10 +10,9 @@ const postSchema = z.object({ body: z.string().min(1).max(300) })
 
 const ACTION_WINDOW_MS = 1_000
 
-// Next.js 15 route handlers receive a `context` with `params` directly,
-// not a Promise. Adjust the type to match the runtime.
-type ClipCommentsRouteContext = { readonly params: { readonly id: string } }
-
+// Next.js validates the second argument shape at build time and expects a Promise-based params bag.
+// Wrap the runtime value with Promise.resolve so it works whether params arrive eagerly or lazily.
+type ClipCommentsRouteContext = { params: Promise<{ id: string }> }
 type ClipCommentInsert = Database['public']['Tables']['clip_comments']['Insert']
 type ClipCommentRow = Database['public']['Tables']['clip_comments']['Row']
 
@@ -29,7 +28,8 @@ type ClipCommentsClient = {
 
 type ProfileSummary = Pick<Database['public']['Tables']['profiles']['Row'], 'display_name' | 'username' | 'avatar_url'>
 
-export async function GET(request: Request, { params }: ClipCommentsRouteContext) {
+export async function GET(request: Request, context: ClipCommentsRouteContext) {
+  const params = await Promise.resolve(context.params)
   const supabase = createServerClient()
   const parsed = paramsSchema.safeParse(params)
 
@@ -94,7 +94,8 @@ export async function GET(request: Request, { params }: ClipCommentsRouteContext
   })
 }
 
-export async function POST(request: Request, { params }: ClipCommentsRouteContext) {
+export async function POST(request: Request, context: ClipCommentsRouteContext) {
+  const params = await Promise.resolve(context.params)
   const supabase = createServerClient()
   const { data: auth } = await supabase.auth.getSession()
 
