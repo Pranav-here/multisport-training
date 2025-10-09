@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase-server'
 
 export async function POST() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+  const supabase = createServerClient() as unknown as SupabaseClient<any>
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {
