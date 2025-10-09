@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { Search, Bell, Moon, Sun, User, Settings, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import { logout as logoutAction } from '@/app/(routes)/actions'
 import { NotificationsList } from '@/components/notifications'
@@ -20,9 +21,21 @@ export function Header() {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
   const [isSigningOut, startTransition] = useTransition()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { toast } = useToast()
   const { user } = useAuth()
+
+  const trimmedQuery = searchQuery.trim()
+  const normalizedQuery = trimmedQuery.toLowerCase()
+
+  const filteredSuggestions = useMemo(
+    () =>
+      famousPeople
+        .filter((p) => !normalizedQuery || p.name.toLowerCase().includes(normalizedQuery) || p.id.includes(normalizedQuery))
+        .slice(0, 5),
+    [normalizedQuery]
+  )
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,6 +72,30 @@ export function Header() {
     })
   }
 
+  const navigateToProfile = (person: (typeof famousPeople)[number]) => {
+    setSearchQuery(person.name)
+    setShowSuggestions(false)
+    router.push(`/athletes/${person.id}`)
+  }
+
+  const handleSearchSubmit = () => {
+    if (!normalizedQuery) return
+
+    const exactMatch = famousPeople.find(
+      (p) => p.name.toLowerCase() === normalizedQuery || p.id.toLowerCase() === normalizedQuery
+    )
+    const fallbackMatch = exactMatch ?? filteredSuggestions[0]
+
+    if (fallbackMatch) {
+      navigateToProfile(fallbackMatch)
+    } else {
+      toast({
+        title: 'No match found',
+        description: 'Try searching for a featured athlete like LeBron James.',
+      })
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4">
@@ -80,6 +117,12 @@ export function Header() {
                 setSearchQuery(e.target.value)
                 setShowSuggestions(e.target.value.trim().length > 0)
               }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault()
+                  handleSearchSubmit()
+                }
+              }}
               onFocus={() => setShowSuggestions(searchQuery.trim().length > 0)}
               autoComplete="off"
               aria-expanded={showSuggestions}
@@ -96,25 +139,19 @@ export function Header() {
                   <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">Esc</span>
                 </div>
                 <ul className="divide-y" role="listbox" aria-label="Search suggestions">
-                  {famousPeople
-                    .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .slice(0, 5)
-                    .map((p) => (
-                      <li key={p.id}>
-                        <button
-                          type="button"
-                          className="flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-accent/30 focus:bg-accent/30 focus:outline-none"
-                          onMouseDown={(event) => event.preventDefault()}
-                          onClick={() => {
-                            setSearchQuery(p.name)
-                            setShowSuggestions(false)
-                          }}
-                        >
-                          <span>{p.name}</span>
-                          <span className="text-xs text-muted-foreground">{p.sport}</span>
-                        </button>
-                      </li>
-                    ))}
+                  {filteredSuggestions.map((p) => (
+                    <li key={p.id}>
+                      <button
+                        type="button"
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-accent/30 focus:bg-accent/30 focus:outline-none"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => navigateToProfile(p)}
+                      >
+                        <span>{p.name}</span>
+                        <span className="text-xs text-muted-foreground">{p.sport}</span>
+                      </button>
+                    </li>
+                  ))}
                 </ul>
               </div>
             )}
