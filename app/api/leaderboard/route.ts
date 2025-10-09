@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/supabase-server'
 
 export async function GET(request: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+  const supabase = createServerClient() as unknown as SupabaseClient<any>
   const url = new URL(request.url)
   const sportSlug = url.searchParams.get('sportSlug')
 
