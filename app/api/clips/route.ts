@@ -186,7 +186,7 @@ async function hydrateClips({
 
 export async function POST(request: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+  const supabase = createServerClient() as unknown as SupabaseClient<any>
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {
@@ -260,7 +260,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createServerClient() as SupabaseClient<any>
+  const supabase = createServerClient() as unknown as SupabaseClient<any>
   const { data: auth } = await supabase.auth.getSession()
   const url = new URL(request.url)
   const sportSlug = url.searchParams.get('sportSlug')
