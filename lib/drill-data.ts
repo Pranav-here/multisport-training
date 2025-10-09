@@ -229,6 +229,40 @@ export const mockDrills: Record<string, Drill[]> = {
       targetSkills: ["Backhand Technique", "Ball Control", "Court Positioning"],
     },
   ],
+  strength: [
+    {
+      id: "strength-shoulder-raise",
+      title: "Lateral Raise Shoulder Finisher",
+      sport: "Strength Training",
+      difficulty: "intermediate",
+      duration: "12 min",
+      equipment: ["Light to moderate dumbbells", "Mirror (optional)"],
+      description:
+        "Dial in your middle delts with controlled lateral raises. Focus on leading with the elbow, keeping the shoulders packed down, and extending the lever only when you can maintain clean mechanics.",
+      steps: [
+        "Warm up your shoulders with arm circles and light band pull-aparts for 2 minutes.",
+        "Stand tall with dumbbells at your sides, brace your core, and pin your shoulders down away from your ears.",
+        "Initiate the raise by driving the elbows outward and slightly forward instead of lifting the hands.",
+        "Lift until your elbows reach shoulder height, pausing briefly while keeping traps relaxed.",
+        "If fatigue kicks in, shorten the lever by bending the elbows, then gradually straighten them back out as you regain control.",
+        "Finish with a slow 30-second set, maintaining tension through the side delt and resisting the urge to shrug.",
+      ],
+      videoUrl: "/james-drill.mp4",
+      thumbnail: "/sports-training-video.png",
+      coachingCues: [
+        "Lead with your elbows; think about the dumbbells as passengers.",
+        "Keep your shoulders down and your chest proud.",
+        "Move with a steady tempo and control both the lift and the descent.",
+        "Choose a weight that lets you extend your arms without swinging.",
+      ],
+      safetyTips: [
+        "Select a weight you can control for the full range without shrugging.",
+        "Avoid locking out the elbows at the top of the rep.",
+        "Stop immediately if you feel any sharp pain in the shoulder joint.",
+      ],
+      targetSkills: ["Shoulder Strength", "Lateral Raise Mechanics", "Mind-Muscle Connection", "Tempo Control"],
+    },
+  ],
 }
 
 export const mockProgressData: ProgressData = {
