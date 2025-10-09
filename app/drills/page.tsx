@@ -16,6 +16,7 @@ const sports = [
   { id: "basketball", name: "Basketball", icon: "🏀" },
   { id: "volleyball", name: "Volleyball", icon: "🏐" },
   { id: "tennis", name: "Tennis", icon: "🎾" },
+  { id: "strength", name: "Strength Training", icon: "💪" },
 ]
 
 export default function DrillsPage() {
