@@ -7,8 +7,24 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, Bookmark, Flag, Play, MoreHorizontal, MapPin, Clock, Zap } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  Heart,
+  MessageCircle,
+  Share,
+  Bookmark,
+  Flag,
+  Play,
+  MoreHorizontal,
+  MapPin,
+  Clock,
+  Zap,
+  Trash2,
+  Link2,
+  Volume2,
+  VolumeX,
+} from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import type { Post } from "@/lib/mock-data"
 
 interface VideoCardProps {
@@ -17,16 +33,51 @@ interface VideoCardProps {
   onSave?: (postId: string) => void
   onShare?: (postId: string) => void
   onFlag?: (postId: string) => void
+  onDelete?: (postId: string) => void | Promise<void>
 }
 
-export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardProps) {
+export function VideoCard({ post, onLike, onSave, onShare, onFlag, onDelete }: VideoCardProps) {
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [thumbnailSrc, setThumbnailSrc] = useState(post.thumbnail || '/placeholder.svg')
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     setThumbnailSrc(post.thumbnail || '/placeholder.svg')
-  }, [post.thumbnail])
+    setIsPlaying(false)
+    setIsMuted(false)
+    if (videoRef.current) {
+      videoRef.current.pause()
+      try {
+        videoRef.current.currentTime = 0
+      } catch {
+        // Ignore if browser blocks resetting the time.
+      }
+    }
+  }, [post.thumbnail, post.videoUrl, post.id])
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted
+    }
+  }, [isMuted])
+
+  useEffect(() => {
+    if (!videoRef.current) return
+    if (isPlaying) {
+      videoRef.current.play().catch((error) => {
+        console.warn("Video playback failed", error)
+        toast({
+          title: "Playback blocked",
+          description: "Tap play again to start the clip with audio.",
+        })
+        setIsPlaying(false)
+      })
+    } else {
+      videoRef.current.pause()
+    }
+  }, [isPlaying, toast])
 
   const handleThumbnailError = () => {
     if (thumbnailSrc !== '/sports-training-video.png') {
@@ -48,6 +99,54 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
 
   const handleFlag = () => {
     onFlag?.(post.id)
+  }
+
+  const handleDelete = async () => {
+    if (!onDelete) return
+
+    const confirmed = window.confirm("Delete this post? This action cannot be undone.")
+    if (!confirmed) return
+
+    try {
+      await onDelete(post.id)
+    } catch (error) {
+      console.error("Failed to delete post", error)
+      toast({
+        title: "Delete failed",
+        description: "We couldn't remove this post. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCopyLink = async () => {
+    if (typeof window === "undefined") return
+
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      toast({
+        title: "Copy unavailable",
+        description: "Clipboard access is not supported in this browser.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const shareUrl = `${window.location.origin}/dashboard?post=${post.id}`
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast({
+        title: "Link copied",
+        description: "Share this highlight with your friends.",
+      })
+    } catch (error) {
+      console.error("Failed to copy post link", error)
+      toast({
+        title: "Copy failed",
+        description: "We couldn't copy the link. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   const getSportColor = (sport: string) => {
@@ -84,12 +183,12 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
                 <p className="font-semibold text-sm">{post.userName}</p>
                 <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                   <span className={getSportColor(post.sport)}>{post.sport}</span>
-                  <span>â€¢</span>
+                  <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <div className="flex items-center space-x-1">
                     <MapPin className="h-3 w-3" />
                     <span>{post.location}</span>
                   </div>
-                  <span>â€¢</span>
+                  <span aria-hidden className="inline-block h-1 w-1 rounded-full bg-muted-foreground/50" />
                   <div className="flex items-center space-x-1">
                     <Clock className="h-3 w-3" />
                     <span>{post.date}</span>
@@ -108,6 +207,19 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
                   <Flag className="mr-2 h-4 w-4" />
                   Report content
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopyLink}>
+                  <Link2 className="mr-2 h-4 w-4" />
+                  Copy link
+                </DropdownMenuItem>
+                {onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete post
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -120,23 +232,17 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
               src={post.videoUrl}
               poster={post.thumbnail || "/sports-training-video.png"}
               className="w-full h-full object-cover"
-              muted
               playsInline
               loop
+              preload="metadata"
               ref={(el) => {
                 videoRef.current = el
                 if (!el) return
+                el.muted = isMuted
                 if (isPlaying) el.play().catch(() => {})
                 else el.pause()
               }}
-              onMouseEnter={() => {
-                setIsPlaying(true)
-                if (videoRef.current) videoRef.current.play().catch(() => {})
-              }}
-              onMouseLeave={() => {
-                setIsPlaying(false)
-                if (videoRef.current) videoRef.current.pause()
-              }}
+              onMouseLeave={() => setIsPlaying(false)}
             />
           ) : (
             <Image
@@ -154,19 +260,25 @@ export function VideoCard({ post, onLike, onSave, onShare, onFlag }: VideoCardPr
               className="h-12 w-12 rounded-full bg-black/40 hover:bg-black/60 text-white hover-pop"
               onClick={() => {
                 // toggle play state
-                setIsPlaying((s) => {
-                  const next = !s
-                  if (videoRef.current) {
-                    if (next) videoRef.current.play().catch(() => {})
-                    else videoRef.current.pause()
-                  }
-                  return next
-                })
+                setIsPlaying((s) => !s)
               }}
             >
               <Play className="h-6 w-6 ml-0.5" />
             </Button>
           </div>
+          {post.videoUrl && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 bg-black/50 hover:bg-black/70 text-white"
+                onClick={() => setIsMuted((m) => !m)}
+                aria-label={isMuted ? "Unmute clip" : "Mute clip"}
+              >
+                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
           <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
             {post.duration}
           </div>
