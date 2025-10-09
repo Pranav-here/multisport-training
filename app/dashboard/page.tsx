@@ -1,9 +1,8 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Plus, Hash } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { Plus, Hash, Upload } from 'lucide-react'
 
 import { Header } from '@/components/header'
 import { MobileNav } from '@/components/mobile-nav'
@@ -15,9 +14,12 @@ import { SidebarWidgets } from '@/components/sidebar-widgets'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { UploadClipDialog, type UploadClipSuccessPayload } from '@/components/upload-clip-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { getSupabaseBrowserClient, type SupabaseBrowserClient } from '@/lib/supabase-browser'
+import { mapClipToPost, type ClipApiResponse } from '@/lib/clips'
+import { addStoredClip, loadStoredClips, removeStoredClip, saveStoredClips, storedClipToClip, type StoredClip } from '@/lib/storage/local'
 import {
   mockChallenge,
   mockLeaderboard,
@@ -30,22 +32,6 @@ import {
   type HashtagInfo,
   type LeaderboardEntry,
 } from '@/lib/mock-data'
-
-interface ClipApiResponse {
-  id: string
-  userId: string
-  storagePath: string
-  caption: string | null
-  thumbnailUrl: string | null
-  visibility: string
-  createdAt: string
-  durationSeconds: number | null
-  width: number | null
-  height: number | null
-  sport: { id: number | null; slug: string | null; name: string | null } | null
-  user: { id: string; displayName: string | null; username: string | null; avatarUrl: string | null }
-  metrics: { likesCount: number; likedByUser: boolean; commentsCount: number }
-}
 
 interface LeaderboardApiEntry {
   userId: string
@@ -73,40 +59,6 @@ type ApiResponse<T> =
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ? process.env.NEXT_PUBLIC_SUPABASE_URL.replace(/\/$/, '') : ''
 const clipsPublicBase = supabaseUrl ? `${supabaseUrl}/storage/v1/object/public` : ''
 
-function mapClipToPost(clip: ClipApiResponse): Post {
-  const videoUrl = clip.storagePath ? `${clipsPublicBase}/clips/${clip.storagePath}` : ''
-  const thumbnailUrl = clip.thumbnailUrl
-    ? clip.thumbnailUrl.startsWith('http')
-      ? clip.thumbnailUrl
-      : `${clipsPublicBase}/clips/${clip.thumbnailUrl}`
-    : videoUrl
-
-  const durationSeconds = clip.durationSeconds ?? 0
-  const minutes = Math.floor(durationSeconds / 60)
-  const seconds = durationSeconds % 60
-  const duration = durationSeconds > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : '0:15'
-
-  return {
-    id: clip.id,
-    userId: clip.user.id,
-    userName: clip.user.displayName ?? clip.user.username ?? 'Athlete',
-    userAvatar: clip.user.avatarUrl ?? '/placeholder.svg',
-    sport: clip.sport?.name ?? 'MultiSport',
-    caption: clip.caption ?? '',
-    tags: clip.sport?.slug ? [clip.sport.slug] : [],
-    location: '',
-    date: formatDistanceToNow(new Date(clip.createdAt), { addSuffix: true }),
-    duration,
-    thumbnail: thumbnailUrl,
-    videoUrl,
-    likes: clip.metrics.likesCount,
-    comments: clip.metrics.commentsCount,
-    shares: 0,
-    isLiked: clip.metrics.likedByUser,
-    isSaved: false,
-  }
-}
-
 const defaultStreak: StreakData = {
   currentStreak: 0,
   longestStreak: 0,
@@ -123,9 +75,25 @@ const createMockPosts = () =>
     tags: [...post.tags],
   }))
 
+function combineStoredAndRemote(storedClips: StoredClip[], remotePosts: Post[] | null, base: string): Post[] {
+  if (!storedClips.length && remotePosts && remotePosts.length) {
+    return remotePosts
+  }
+
+  const localPosts = storedClips.map((clip) => mapClipToPost(storedClipToClip(clip), base))
+  const localIds = new Set(storedClips.map((clip) => clip.id))
+  const remoteSource = remotePosts && remotePosts.length ? remotePosts : createMockPosts()
+  const remoteFiltered = remoteSource.filter((post) => !localIds.has(post.id))
+
+  return [...localPosts, ...remoteFiltered]
+}
+
 export default function DashboardPage() {
-  const [posts, setPosts] = useState<Post[]>(() => createMockPosts())
+  const clipAssetsBase = useMemo(() => clipsPublicBase, [])
+  const [storedClips, setStoredClips] = useState<StoredClip[]>(() => loadStoredClips())
+  const [posts, setPosts] = useState<Post[]>(() => combineStoredAndRemote(loadStoredClips(), null, clipAssetsBase))
   const [postsLoading, setPostsLoading] = useState(false)
+  const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [streak, setStreak] = useState<StreakData>(defaultStreak)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const { toast } = useToast()
@@ -133,6 +101,11 @@ export default function DashboardPage() {
   const profileUsername = profile?.username ?? ''
   const supabase = useMemo<SupabaseBrowserClient>(() => getSupabaseBrowserClient(), [])
   const hashtag = useMemo<HashtagInfo>(() => getTodaysHashtag(), [])
+  const storedClipsRef = useRef<StoredClip[]>(storedClips)
+
+  useEffect(() => {
+    storedClipsRef.current = storedClips
+  }, [storedClips])
 
   const injectCurrentUser = useCallback((entries: LeaderboardEntry[]) => {
     if (!authUser) {
@@ -198,12 +171,12 @@ export default function DashboardPage() {
           throw new Error(payload.error.message)
         }
         if (!cancelled) {
-          const mapped = payload.data.clips.map(mapClipToPost)
-          setPosts(mapped.length > 0 ? mapped : createMockPosts())
+          const mapped = payload.data.clips.map((clip) => mapClipToPost(clip, clipAssetsBase))
+          setPosts(combineStoredAndRemote(storedClipsRef.current, mapped, clipAssetsBase))
         }
       } catch (error) {
         if (!cancelled) {
-          setPosts(createMockPosts())
+          setPosts(combineStoredAndRemote(storedClipsRef.current, null, clipAssetsBase))
           toast({
             title: 'Unable to load feed',
             description: error instanceof Error ? error.message : 'Please try again.',
@@ -222,7 +195,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [toast])
+  }, [toast, clipAssetsBase])
 
   useEffect(() => {
     let cancelled = false
@@ -355,6 +328,26 @@ export default function DashboardPage() {
             : post,
         ),
       )
+      setStoredClips((previous) => {
+        const hasClip = previous.some((clip) => clip.id === postId)
+        if (!hasClip) {
+          return previous
+        }
+        const updated = previous.map((clip) =>
+          clip.id === postId
+            ? {
+                ...clip,
+                metrics: {
+                  ...clip.metrics,
+                  likesCount: payload.data.count,
+                  likedByUser: payload.data.liked,
+                },
+              }
+            : clip,
+        )
+        saveStoredClips(updated)
+        return updated
+      })
     } catch (error) {
       toast({
         title: 'Like failed',
@@ -379,8 +372,8 @@ export default function DashboardPage() {
       previous.map((post) => (post.id === postId ? { ...post, shares: post.shares + 1 } : post)),
     )
     toast({
-      title: 'Post shared',
-      description: 'Link copied to clipboard!',
+      title: 'Share recorded',
+      description: 'Thanks for spreading the word!',
     })
   }
 
@@ -391,12 +384,50 @@ export default function DashboardPage() {
     })
   }
 
+  const handleDeletePost = useCallback(async (postId: string) => {
+    const { error } = await supabase.from('clips').delete().eq('id', postId)
+
+    if (error) {
+      console.error('[dashboard] delete clip', error)
+      throw new Error('Unable to delete this post right now.')
+    }
+
+    setPosts((previous) => previous.filter((post) => post.id !== postId))
+
+    const updatedStored = removeStoredClip(postId)
+    setStoredClips(updatedStored)
+
+    toast({
+      title: 'Post deleted',
+      description: 'This highlight has been removed from your feed.',
+    })
+  }, [supabase, toast])
+
   const handleJoinChallenge = () => {
     toast({
       title: 'Challenge joined!',
       description: "Good luck with today's challenge!",
     })
   }
+
+  const handleUploadComplete = useCallback((payload: UploadClipSuccessPayload) => {
+    const fallbackSport = payload.form.sportName || payload.form.sportSlug
+    const sanitizedClip: ClipApiResponse = {
+      ...payload.clip,
+      caption: payload.clip.caption ?? (payload.form.caption ? payload.form.caption.trim() : null),
+      sport: payload.clip.sport ?? {
+        id: null,
+        slug: payload.form.sportSlug,
+        name: fallbackSport,
+      },
+    }
+
+    const updatedStored = addStoredClip(sanitizedClip)
+    setStoredClips(updatedStored)
+
+    const newPost = mapClipToPost(sanitizedClip, clipAssetsBase)
+    setPosts((previous) => [newPost, ...previous.filter((post) => post.id !== newPost.id)])
+  }, [clipAssetsBase])
 
   const handleQuickPost = () => {
     toast({
@@ -419,7 +450,11 @@ export default function DashboardPage() {
                 <DailyChallengeCard challenge={mockChallenge} onJoin={handleJoinChallenge} />
                 <div className="space-y-4">
                   <StreakWidget streakData={streak} />
-                  <Button className="w-full" onClick={handleQuickPost}>
+                  <Button className="w-full" onClick={() => setIsUploadOpen(true)}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload clip
+                  </Button>
+                  <Button className="w-full" variant="outline" onClick={handleQuickPost}>
                     <Plus className="h-4 w-4 mr-2" />
                     Quick Post
                   </Button>
@@ -480,6 +515,7 @@ export default function DashboardPage() {
                         onSave={handleSave}
                         onShare={handleShare}
                         onFlag={handleFlag}
+                        onDelete={handleDeletePost}
                       />
                     ))}
                   </div>
@@ -511,6 +547,12 @@ export default function DashboardPage() {
 
         <MobileNav />
       </div>
+
+      <UploadClipDialog
+        open={isUploadOpen}
+        onOpenChange={setIsUploadOpen}
+        onUploaded={handleUploadComplete}
+      />
     </AuthGuard>
   )
 }
