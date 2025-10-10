@@ -9,7 +9,7 @@ export default function AboutPage() {
     <div className="container mx-auto px-4 py-6 pb-20 md:pb-6 space-y-8">
       {/* Hero Section */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">About MultiSport</h1>
+        <h1 className="text-4xl font-bold">About AthletIQ</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Empowering athletes to train smarter across every sport through technology, community, and data-driven
           insights.
@@ -52,7 +52,7 @@ export default function AboutPage() {
           <CardContent>
             <p className="text-muted-foreground">
               Safety first, inclusive growth, data privacy, and authentic connections drive everything we do in the
-              MultiSport community.
+              AthletIQ community.
             </p>
           </CardContent>
         </Card>
@@ -121,7 +121,7 @@ export default function AboutPage() {
           <CardContent className="space-y-4">
             <div className="flex items-center space-x-3">
               <Mail className="h-5 w-5 text-muted-foreground" />
-              <span>hello@multisport.app</span>
+              <span>hello@athletiq.app</span>
             </div>
             <div className="flex items-center space-x-3">
               <Phone className="h-5 w-5 text-muted-foreground" />
@@ -171,7 +171,7 @@ export default function AboutPage() {
           <Heart className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">Join Our Community</h2>
           <p className="text-muted-foreground mb-4">
-            Ready to take your training to the next level? Join thousands of athletes already improving with MultiSport.
+            Ready to take your training to the next level? Join thousands of athletes already improving with AthletIQ.
           </p>
           <Link href="/onboarding">
             <Button size="lg">Get Started Today</Button>
