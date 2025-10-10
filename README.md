@@ -1,164 +1,156 @@
-﻿# MultiSport: train smarter in every sport
+# AthletIQ
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Next.js-14-black" alt="Next.js" />
-  <img src="https://img.shields.io/badge/TypeScript-Ready-blue" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tailwind-CSS-38BDF8" alt="Tailwind" />
-  <img src="https://img.shields.io/badge/shadcn/ui-Components-000000" alt="shadcn/ui" />
-  <img src="https://img.shields.io/badge/pnpm-10.x-4A3" alt="pnpm" />
-  <img src="https://img.shields.io/badge/Vercel-Deploy-000000" alt="Vercel" />
-</p>
+AthletIQ is a multi-sport training platform built with Next.js 15, TypeScript, Tailwind CSS, and Supabase. The app helps athletes and coaches plan sessions, capture short-form video progress, and track streaks across multiple sports from a single dashboard.
 
-> A clean, mobileâ€‘first Next.js app for multiâ€‘sport athletes. Videoâ€‘first progress, daily challenges, local leaderboards, and coach tools in one login. Built with TypeScript, Tailwind, and shadcn/ui. All data is placeholder for now, so you can iterate fast.
+## Live preview
 
-## ðŸ”— Live preview
+- Demo: https://v0-multi-sport-app-build.vercel.app/
 
-https://v0-multi-sport-app-build.vercel.app/
+## Current experience
 
-## âœ¨ What is in here right now
+- Landing page with hero, feature grid, testimonial carousel, and a "How it works" journey.
+- Authenticated surfaces protected by Supabase session-aware middleware (onboarding, dashboard, profile settings, guidelines, about).
+- Four-step onboarding flow that captures sport mix, affiliations, skill level, goal focus, and privacy preferences, including a Safe Recording pledge.
+- Dashboard that blends mock feed data with locally cached uploads, daily challenges, streak insights, leaderboards, and daily hashtag prompts.
+- Upload workflow that generates Supabase Storage signed URLs, tracks progress locally, and surfaces new clips immediately.
+- Daily challenge generator that calls Groq (when configured) and gracefully falls back to curated challenges per sport.
+- Accessibility-first UI: focus-visible states, motion-safe transitions, semantic landmarks, and keyboard-friendly dialogs.
 
-- Landing page with hero, feature grid, testimonials carousel, and â€œHow it worksâ€ steps
-- Polished microâ€‘interactions (hover, focus visible, motionâ€‘safe transitions)
-- Onboarding flow (4 steps)
-  - Choose sports  
-  - Location and affiliation
-  - Skill level and goals (sportâ€‘specific goals, â€œAllâ€ filter chip)
-  - Privacy and content step with a **Safe recording pledge**
-- Basic fake auth flow
-  - `/login` (click to â€œlog inâ€)
-  - `AuthGuard` protects `/onboarding` and later routes
-  - Session stored in `localStorage`, easy to replace later
-- A11y improvements: focus rings, readable labels, helper text when Next is disabled
+## Architecture snapshot
 
-## ðŸ§  Product idea, in short
+- **Frontend:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS (sport accent tokens), shadcn/ui primitives, lucide-react icon set.
+- **State and hooks:** Custom hooks for Supabase auth (`useAuth`), toast notifications, challenge caching, and countdown timers.
+- **Auth and access control:** Middleware-enforced route protection with onboarding gating (`middleware.ts`), plus an `AuthGuard` component for client-only views.
+- **Data and APIs:** REST endpoints under `app/api/*` cover clip CRUD, leaderboards, daily challenges, streak tracking, uploads, and Supabase auth callbacks. Domain models live in `types/database.ts`.
+- **Storage:** Supabase Storage-backed clip uploads with local caching helpers (`lib/storage/local`) so newly posted content appears before remote indexing.
+- **Analytics and mock data:** Rich placeholder datasets in `lib/mock-data.ts`, `analytics-data.ts`, and `leaderboard-data.ts` power UI prototypes ahead of real data connections.
+- **AI integrations (optional):** Daily challenge endpoint can call Groq when `GROQ_API_KEY` is defined; legacy OpenAI chat prototype is documented in `AI_INTEGRATION.md`.
 
-One app for multiple sports. Short clips, not long forms. Streaks, simple analytics, local leaderboards, and â€œone device coach modeâ€ so a team can record attempts in sequence with a single phone.
+## Local development
 
-## ðŸ—ºï¸ Routes
+### Requirements
 
-- `/` Landing
-- `/login` Fake login (Google button is visual only for now)
-- `/onboarding` Sports, location, goals, privacy
-- `/dashboard` Placeholder route after onboarding
-- `/about` Project writeâ€‘up (Who, Where, Why, What, When) ready to fill
-- `/guidelines` Community standards and safety tips
-- `/settings` Privacy and account placeholders
+- Node.js 18+
+- pnpm 10+ (use Corepack to pin versions)
+- Supabase project (required for full auth/upload flows)
 
-## ðŸ§© Tech stack
-
-- Next.js 14 (App Router), React 18, TypeScript
-- Tailwind CSS with CSS variables for sport accent colors
-- shadcn/ui (Card, Button, Tabs, Badge, Checkbox, RadioGroup, Progress)
-- lucideâ€‘react icons
-- Local state and a small `useAuth` hook, `useToast`, `AuthGuard`
-
-## ðŸ› ï¸ Getting started
-
-> Requires Node 18+ and pnpm 10.x. Use Corepack to keep versions aligned with CI.
+### Install
 
 ```bash
 corepack enable
-corepack prepare pnpm@10.0.0 --activate
-
+corepack prepare pnpm@10 --activate
 pnpm install
-pnpm dev
-# open http://localhost:3000
 ```
 
-## ðŸ“¦ Useful scripts
+Create `.env.local` in the repository root:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+SITE_URL=http://localhost:3000
+RESEND_API_KEY=optional-resend-api-key
+OPENAI_API_KEY=optional-openai-key
+GROQ_API_KEY=optional-groq-key
+```
+
+> Keep the service role key server-side only. Use Vercel or your hosting provider's secret manager in production.
+
+### Run
 
 ```bash
-pnpm dev        # run local dev server
-pnpm build      # production build
-pnpm start      # run built app
-pnpm lint       # lint
+pnpm dev          # start Next.js dev server on http://localhost:3000
+pnpm lint         # run ESLint
+pnpm build        # create a production build
+pnpm start        # serve the production build
 ```
 
-## ðŸ§­ Folder sketch
+### Supabase bootstrap
+
+1. In Supabase, run the SQL schema (see `schema.sql`) to create required tables and policies.
+2. Configure the auth site URL and redirect URLs to `http://localhost:3000` for local development.
+3. Optionally run `node scripts/seed-supabase.mjs` to seed sports, drills, and leaderboard rows.
+4. Sign in through `/login`, complete onboarding, and confirm `profiles`, `user_sports`, and related tables populate.
+
+## Project layout
 
 ```
 app/
-  (routes)/
-    page.tsx              # Landing
-    login/page.tsx        # auth
-    onboarding/page.tsx   # Multi-step onboarding
-    dashboard/page.tsx    # Post-login placeholder
-    about/page.tsx
-    guidelines/page.tsx
-    settings/page.tsx
+  page.tsx                  # marketing landing page
+  login/                    # Supabase auth bridge
+  onboarding/               # multi-step onboarding wizard
+  dashboard/                # authenticated athlete experience
+  challenge-arena/          # challenge discovery prototype
+  api/                      # REST endpoints (clips, challenges, streaks, uploads, auth)
 components/
-  auth-guard.tsx
-  ui/*                    # shadcn/ui components
+  header.tsx                # shared shell
+  upload-clip-dialog.tsx    # Supabase storage upload flow
+  daily-challenge-card.tsx  # challenge display module
+  ui/                       # shadcn/ui primitives
 hooks/
-  use-auth.ts
-  use-toast.ts
+  use-auth.ts               # Supabase session sync
+  use-daily-challenge.ts    # cached challenge fetch with Groq fallback
+lib/
+  supabase-server.ts        # server client + admin helpers
+  supabase-browser.ts       # browser client
+  clips.ts                  # clip DTO mappers
+  mock-data.ts              # feed, leaderboard, and badge fixtures
 public/
-  placeholder assets (avatars, icons, clips)
+  *.png / *.webp            # placeholder athlete imagery
+scripts/
+  seed-supabase.mjs         # optional data seeding
+types/
+  database.ts               # generated Supabase typings
+legacy/
+  api/ / components/        # archived AI chat prototype
 ```
 
-## ðŸ§± Design system
+## API surface
 
-- Neutral base colors with light sport accents (blue, green, orange)
-- Minimal shadows, rounded corners, small hover lifts
-- Motion is optâ€‘in, respects `prefers-reduced-motion`
-- Friendly tone, nothing weird, privacy first
+- `GET /api/daily-challenge` - returns a per-user challenge seeded by sport and timezone.
+- `POST /api/upload/create-url` - signs Supabase Storage uploads server-side.
+- `GET /api/clips` - retrieves clip feed (Supabase + mock fallback).
+- `POST /api/clips` - registers new clips with metadata.
+- `POST /api/clips/[id]/like` - like/unlike interactions with optimistic UI support.
+- `POST /api/clips/[id]/comments` - adds validated comments to clips.
+- `GET /api/leaderboard` - resolves leaderboard standings for dashboard widgets.
+- `POST /api/streak/increment` - records daily streak progress.
+- `GET /api/auth/callback` - Supabase OAuth callback handler that persists auth cookies.
 
-## ðŸ” Safety and privacy
+## Tooling and quality
 
-- Safe recording pledge in onboarding
-- Do not film minors without a parent or legal guardianâ€™s permission
-- Get consent before filming anyone, respect requests to stop
-- Avoid private info in clips or captions
+- ESLint with `eslint-config-next` enforces code style.
+- Tailwind CSS 4 with CSS variables handles sport-specific theming.
+- Radix primitives (via shadcn/ui) ensure accessible dialogs, menus, and overlays.
+- `lib/rate-limit.ts` provides basic API throttling utilities.
+- `lib/storage/local` keeps locally generated clip metadata consistent across reloads.
 
-## ðŸš§ Roadmap (near term)
+## Design language
 
-- â€œSee live demoâ€ button that fakes a session and routes to `/dashboard`
-- Real Google OAuth
-- One device coach session flow with roster and queue
-- Local leaderboards with server data
-- Drill library with clip record and attempt logging
-- Simple analytics (load vs rest, accuracy trend)
-- Data export and delete account flows
+- Neutral grayscale base with blue/green/orange sport accent gradients.
+- Motion defaults respect `prefers-reduced-motion`.
+- Large touch targets, consistent focus rings, descriptive ARIA labels across components.
+- Responsive shell via `Header`, `MobileNav`, and `SidebarWidgets`.
 
-## ðŸ§° Vercel and pnpm notes
+## Deployment notes
 
-If Vercel fails with a frozen lockfile error, the lockfile and `package.json` are out of sync.
+- Optimized for Vercel (App Router). Configure environment variables in the Vercel dashboard before deploying.
+- pnpm is the package manager. Enable Corepack in CI/CD to avoid frozen-lockfile failures; regenerate by running `pnpm install && pnpm install --frozen-lockfile` when dependencies drift.
+- Align Supabase auth redirect URLs with `NEXT_PUBLIC_SITE_URL`/`SITE_URL`.
 
-**Fix locally:**
-```bash
-corepack enable
-corepack prepare pnpm@10.0.0 --activate
-pnpm up vaul@^1.1.2
-pnpm install
-git add pnpm-lock.yaml package.json
-git commit -m "chore: sync lockfile"
-git push
-```
+## Additional references
 
-## ðŸ¤ Contributing
+- `AI_INTEGRATION.md` - guardrails and ideas for reintroducing AI copilots.
+- `legacy/` - archived components and routes retained for reference.
+- `styles/` - Tailwind globals and sport color variables.
+- `middleware.ts` - single source of truth for access rules and onboarding enforcement.
 
-Open a PR or drop issues. Keep copy simple, avoid hype, prefer real user value. Small PRs are better than huge ones.
+## Status
 
-## ðŸ“ License
-
-MIT
-
-
-
-## Backend setup
-
-1. Install project dependencies with `npm install`.
-2. Start the local development server with `npm run dev`.
-3. Open your Supabase project dashboard, navigate to the SQL editor, paste the contents of `schema.sql`, and run it once.
-4. Sign in at `/login`, complete onboarding, and confirm that your profile appears without reload errors.
-5. Test the upload flow:
-   1. Call `POST /api/upload/create-url` with `{ "fileName": "clip.mp4", "contentType": "video/mp4", "fileSize": 10485760 }`.
-   2. PUT the file bytes to the signed URL you received.
-   3. Call `POST /api/clips` with the storage path from step 2 plus metadata (sport slug, caption, visibility).
-
-1. Install project dependencies with `npm install`.
-2. Start the local development server with `npm run dev`.
-3. Open your Supabase project dashboard, go to the SQL editor, paste the contents of `schema.sql`, and run the script once.
-4. Visit `/login`, authenticate with Google or a magic link, and complete onboarding to create your profile data.
-5. To test uploads: (a) call `POST /api/upload/create-url` with a JSON body like `{ "fileName": "clip.mp4", "contentType": "video/mp4", "fileSize": 10485760 }`, (b) use the returned signed URL to PUT your file bytes, (c) call `POST /api/clips` with the storage path from step b to register the clip.
-
+incomplete asf, here are potential changes we are thinking of doing:
+- Wire the dashboard feed, leaderboards, and streak widgets to live Supabase data.
+- Ship production-ready OAuth providers and email magic links.
+- Build the one-device coach session flow with roster queues and inline scoring.
+- Expand analytics panels with deeper workload vs. recovery insights and export options.
+- Add end-to-end and visual regression coverage to protect the core journeys while iterating.
