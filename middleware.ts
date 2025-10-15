@@ -46,6 +46,7 @@ export async function middleware(request: NextRequest) {
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   const isApiRoute = pathname.startsWith('/api')
+  const isOnboardingRoute = pathname.startsWith('/onboarding')
 
   if (isApiRoute) {
     return response
@@ -59,8 +60,34 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  if (session && pathname === '/login') {
+  if (!session) {
+    return response
+  }
+
+  let hasProfile: boolean | null = null
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', session.user.id)
+    .maybeSingle<{ id: string }>()
+
+  if (profileError) {
+    console.error('[middleware] profile lookup', profileError)
+  } else {
+    hasProfile = Boolean(profile?.id)
+  }
+
+  if (hasProfile === false && !isOnboardingRoute) {
+    return NextResponse.redirect(new URL('/onboarding', request.url))
+  }
+
+  if (hasProfile === true && isOnboardingRoute) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  if (pathname === '/login') {
+    const target = hasProfile === false ? '/onboarding' : '/dashboard'
+    return NextResponse.redirect(new URL(target, request.url))
   }
 
   return response
