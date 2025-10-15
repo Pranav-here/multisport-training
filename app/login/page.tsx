@@ -2,6 +2,7 @@
 
 import { FormEvent, Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
@@ -20,6 +21,13 @@ function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => getSupabaseBrowserClient(), [])
+  const redirectTarget = useMemo(() => {
+    const requested = searchParams?.get('redirectedFrom')
+    if (requested && requested.startsWith('/') && !requested.startsWith('//')) {
+      return requested
+    }
+    return '/dashboard'
+  }, [searchParams])
 
   useEffect(() => {
     if (searchParams?.get('error') === 'auth') {
@@ -44,7 +52,7 @@ function LoginPageContent() {
   const handleGoogleLogin = async () => {
     setIsOauthLoading(true)
     try {
-      const redirectTo = buildCallbackUrl('/dashboard')
+      const redirectTo = buildCallbackUrl(redirectTarget)
       if (!redirectTo) {
         throw new Error('Unable to determine redirect target.')
       }
@@ -83,7 +91,7 @@ function LoginPageContent() {
 
     setIsMagicLoading(true)
     try {
-      const redirectTo = buildCallbackUrl('/onboarding')
+      const redirectTo = buildCallbackUrl(redirectTarget)
       if (!redirectTo) {
         throw new Error('Unable to determine redirect target.')
       }
@@ -115,11 +123,16 @@ function LoginPageContent() {
       <span className="pointer-events-none absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl transition-all dark:bg-primary/10" aria-hidden="true" />
       <Card className="w-full max-w-md backdrop-blur-sm bg-card/95 shadow-2xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center">
-            <span className="text-white font-bold text-lg">MS</span>
-          </div>
+          <Image
+            src="/athleIQ-icon-128.png"
+            alt="AthletIQ logo"
+            width={48}
+            height={48}
+            className="mx-auto mb-4 h-12 w-12 rounded-lg"
+            priority
+          />
           <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to continue training with MultiSport.</CardDescription>
+          <CardDescription>Sign in to continue training with AthletIQ.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleMagicLink} className="space-y-4">
