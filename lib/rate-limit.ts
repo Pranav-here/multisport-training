@@ -2,12 +2,12 @@
 
 declare global {
   // eslint-disable-next-line no-var
-  var __multisportActionRateLimit__: RateLimitStore | undefined
+  var __athletiqActionRateLimit__: RateLimitStore | undefined
 }
 
-const store: RateLimitStore = globalThis.__multisportActionRateLimit__ ?? new Map<string, number>()
-if (!globalThis.__multisportActionRateLimit__) {
-  globalThis.__multisportActionRateLimit__ = store
+const store: RateLimitStore = globalThis.__athletiqActionRateLimit__ ?? new Map<string, number>()
+if (!globalThis.__athletiqActionRateLimit__) {
+  globalThis.__athletiqActionRateLimit__ = store
 }
 
 export function checkRateLimit(key: string, minIntervalMs: number) {
