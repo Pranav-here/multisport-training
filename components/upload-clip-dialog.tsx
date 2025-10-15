@@ -33,7 +33,7 @@ type SportOption = {
 }
 
 const DEFAULT_SPORT_OPTIONS: SportOption[] = [
-  { slug: 'multisport', name: 'MultiSport' },
+  { slug: 'athletiq', name: 'AthletIQ' },
   { slug: 'basketball', name: 'Basketball' },
   { slug: 'soccer', name: 'Soccer' },
   { slug: 'tennis', name: 'Tennis' },
@@ -339,7 +339,7 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload a training clip</DialogTitle>
           <DialogDescription>
