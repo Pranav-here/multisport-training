@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -46,7 +47,7 @@ const testimonials = [
     role: "Multi-sport Athlete",
     avatar: "/asian-athlete.png",
     quote:
-      "MultiSport helped me improve my ball control in soccer while maintaining my basketball shooting form. The cross-training insights are incredible.",
+      "AthletIQ helped me improve my ball control in soccer while maintaining my basketball shooting form. The cross-training insights are incredible.",
   },
   {
     name: "Maria Rodriguez",
@@ -121,10 +122,15 @@ export default function LandingPage() {
             className="group flex items-center space-x-2 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
             aria-label="Home"
           >
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-              <span className="text-white font-bold text-sm">MS</span>
-            </div>
-            <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">MultiSport</span>
+            <Image
+              src="/athleIQ-icon-64.png"
+              alt="AthletIQ logo"
+              width={32}
+              height={32}
+              priority
+              className="h-8 w-8 rounded-lg transition-transform duration-200 group-hover:scale-105"
+            />
+            <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">AthletIQ</span>
           </Link>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Link href="/login">
@@ -247,7 +253,7 @@ export default function LandingPage() {
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by athletes everywhere</h2>
-            <p className="text-xl text-muted-foreground">See what coaches and athletes are saying about MultiSport</p>
+            <p className="text-xl text-muted-foreground">See what coaches and athletes are saying about AthletIQ</p>
           </div>
           <div className="max-w-4xl mx-auto">
             <Card
@@ -355,7 +361,7 @@ export default function LandingPage() {
         <div className="container px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to train smarter?</h2>
           <p className="text-xl text-muted-foreground mb-8 text-balance max-w-2xl mx-auto">
-            Join thousands of multi-sport athletes who are already using MultiSport to reach their potential.
+            Join thousands of multi-sport athletes who are already using AthletIQ to reach their potential.
           </p>
           <Link href="/login">
             <Button
@@ -379,10 +385,14 @@ export default function LandingPage() {
               className="group flex items-center space-x-2 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-md"
               aria-label="Home"
             >
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-sport-blue to-sport-green flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-                <span className="text-white font-bold text-sm">MS</span>
-              </div>
-              <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">MultiSport</span>
+              <Image
+                src="/athleIQ-icon-64.png"
+                alt="AthletIQ logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 rounded-lg transition-transform duration-200 group-hover:scale-105"
+              />
+              <span className="font-bold text-xl transition-colors duration-200 group-hover:text-primary">AthletIQ</span>
             </Link>
             <div className="flex space-x-6 text-sm text-muted-foreground">
               <Link href="/about" className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded">
