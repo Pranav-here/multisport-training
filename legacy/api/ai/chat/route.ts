@@ -1,27 +1,27 @@
 ﻿import { NextResponse } from 'next/server'
 
-// Simple server-side proxy to call OpenAI Chat Completions.
-// Important: keep your API key in environment variables (OPENAI_API_KEY).
+// Simple server-side proxy to call Groq chat completions compatible with the OpenAI schema.
+// Important: keep your API key in environment variables (GROQ_API_KEY).
 // This route protects the key from the browser and centralizes usage controls.
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { messages, model = 'gpt-4o-mini' } = body || {}
+    const { messages, model = process.env.GROQ_DEFAULT_MODEL ?? 'llama-3.1-8b-instant' } = body || {}
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json({ error: 'messages array required' }, { status: 400 })
     }
 
-    const key = process.env.OPENAI_API_KEY
+    const key = process.env.GROQ_API_KEY
     if (!key) {
-      return NextResponse.json({ error: 'OpenAI API key not configured on server' }, { status: 500 })
+      return NextResponse.json({ error: 'Groq API key not configured on server' }, { status: 500 })
     }
 
     // Basic safety: cap the number of messages forwarded to avoid sending huge payloads
     const safeMessages = messages.slice(-20)
 
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     const data = await resp.json()
 
-    // Forward OpenAI response (caller can inspect choices). Keep it simple.
+    // Forward Groq response (caller can inspect choices). Keep it simple.
     return NextResponse.json(data)
   } catch (error) {
     console.error('[api/ai/chat] upstream failure', error)
