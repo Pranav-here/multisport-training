@@ -68,7 +68,7 @@ export function mapClipToPost(clip: ClipApiResponse, clipsPublicBase: string): P
     userId: clip.user.id,
     userName: clip.user.displayName ?? clip.user.username ?? 'Athlete',
     userAvatar: clip.user.avatarUrl ?? '/placeholder.svg',
-    sport: clip.sport?.name ?? 'MultiSport',
+    sport: clip.sport?.name ?? 'AthletIQ',
     caption: clip.caption ?? '',
     tags: clip.sport?.slug ? [clip.sport.slug] : [],
     location: '',
