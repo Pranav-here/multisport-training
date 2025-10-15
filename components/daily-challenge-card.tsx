@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
@@ -8,14 +8,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Users, Clock } from 'lucide-react'
 import type { Challenge } from '@/lib/mock-data'
+import { useCountdown } from '@/hooks/use-countdown'
 
 interface DailyChallengeCardProps {
   challenge: Challenge
-  onJoin?: () => void
+  onJoin?: (challenge: Challenge) => void
 }
 
 export function DailyChallengeCard({ challenge, onJoin }: DailyChallengeCardProps) {
   const [imageSrc, setImageSrc] = useState(challenge.thumbnail || '/placeholder.svg')
+  const countdown = useCountdown(challenge.deadline)
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -35,6 +37,8 @@ export function DailyChallengeCard({ challenge, onJoin }: DailyChallengeCardProp
       setImageSrc('/daily-sports-challenge.png')
     }
   }
+
+  const sportBadge = useMemo(() => challenge.sport.replace(/\b\w/g, (char) => char.toUpperCase()), [challenge.sport])
 
   return (
     <Card className='overflow-hidden bg-gradient-to-br from-sport-blue/5 to-sport-green/5 border-sport-blue/20'>
@@ -62,7 +66,7 @@ export function DailyChallengeCard({ challenge, onJoin }: DailyChallengeCardProp
             priority={false}
           />
           <div className='absolute inset-0 bg-gradient-to-t from-black/50 to-transparent' />
-          <div className='absolute bottom-2 left-2 text-sm font-medium text-white'>{challenge.sport}</div>
+          <div className='absolute bottom-2 left-2 text-sm font-medium text-white'>{sportBadge}</div>
         </div>
 
         <p className='text-sm text-muted-foreground text-balance'>{challenge.description}</p>
@@ -75,13 +79,13 @@ export function DailyChallengeCard({ challenge, onJoin }: DailyChallengeCardProp
             </div>
             <div className='flex items-center space-x-1 text-muted-foreground'>
               <Clock className='h-4 w-4' />
-              <span>{challenge.timeLeft} left</span>
+              <span>{countdown.timeRemainingLabel} left</span>
             </div>
           </div>
           <div className='font-semibold text-sport-blue'>+{challenge.points} pts</div>
         </div>
 
-        <Button className='w-full' onClick={onJoin}>
+        <Button className='w-full' onClick={() => onJoin?.(challenge)}>
           Join Challenge
         </Button>
       </CardContent>
