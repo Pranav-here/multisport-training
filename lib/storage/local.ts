@@ -1,6 +1,6 @@
 import type { ClipApiResponse } from '@/lib/clips'
 
-const STORAGE_PREFIX = 'multisport-training'
+const STORAGE_PREFIX = 'athletiq-training'
 const DASHBOARD_CLIPS_KEY = `${STORAGE_PREFIX}:dashboard:clips`
 const STORAGE_VERSION = 1
 
