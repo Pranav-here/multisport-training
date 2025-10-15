@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Plus, Hash, Upload } from 'lucide-react'
 
@@ -9,6 +10,7 @@ import { MobileNav } from '@/components/mobile-nav'
 import { AuthGuard } from '@/components/auth-guard'
 import { VideoCard } from '@/components/video-card'
 import { DailyChallengeCard } from '@/components/daily-challenge-card'
+import { JoinChallengeDialog } from '@/components/join-challenge-dialog'
 import { StreakWidget } from '@/components/streak-widget'
 import { SidebarWidgets } from '@/components/sidebar-widgets'
 import { Button } from '@/components/ui/button'
@@ -17,11 +19,11 @@ import { Badge } from '@/components/ui/badge'
 import { UploadClipDialog, type UploadClipSuccessPayload } from '@/components/upload-clip-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
+import { useDailyChallenge, DAILY_CHALLENGE_STORAGE_KEY } from '@/hooks/use-daily-challenge'
 import { getSupabaseBrowserClient, type SupabaseBrowserClient } from '@/lib/supabase-browser'
 import { mapClipToPost, type ClipApiResponse } from '@/lib/clips'
 import { addStoredClip, loadStoredClips, removeStoredClip, saveStoredClips, storedClipToClip, type StoredClip } from '@/lib/storage/local'
 import {
-  mockChallenge,
   mockLeaderboard,
   mockBadges,
   mockTeamSessions,
@@ -31,6 +33,7 @@ import {
   type StreakData,
   type HashtagInfo,
   type LeaderboardEntry,
+  type Challenge,
 } from '@/lib/mock-data'
 
 interface LeaderboardApiEntry {
@@ -90,15 +93,19 @@ function combineStoredAndRemote(storedClips: StoredClip[], remotePosts: Post[] |
 
 export default function DashboardPage() {
   const clipAssetsBase = useMemo(() => clipsPublicBase, [])
+  const router = useRouter()
   const [storedClips, setStoredClips] = useState<StoredClip[]>(() => loadStoredClips())
   const [posts, setPosts] = useState<Post[]>(() => combineStoredAndRemote(loadStoredClips(), null, clipAssetsBase))
   const [postsLoading, setPostsLoading] = useState(false)
   const [isUploadOpen, setIsUploadOpen] = useState(false)
   const [streak, setStreak] = useState<StreakData>(defaultStreak)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false)
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null)
   const { toast } = useToast()
   const { session, user: authUser, profile } = useAuth()
   const profileUsername = profile?.username ?? ''
+  const { challenge: dailyChallenge, loading: dailyChallengeLoading } = useDailyChallenge(session)
   const supabase = useMemo<SupabaseBrowserClient>(() => getSupabaseBrowserClient(), [])
   const hashtag = useMemo<HashtagInfo>(() => getTodaysHashtag(), [])
   const storedClipsRef = useRef<StoredClip[]>(storedClips)
@@ -147,7 +154,7 @@ export default function DashboardPage() {
       userAvatar: normalizedAvatar,
       score: 0,
       school: usernameLabel,
-      sport: 'MultiSport',
+      sport: 'AthletIQ',
     }
 
     return [newEntry, ...entries].map((entry, index) => ({
@@ -217,7 +224,7 @@ export default function DashboardPage() {
           userAvatar: entry.user.avatarUrl ?? '/placeholder.svg',
           score: entry.score ?? 0,
           school: entry.sport?.name ?? '',
-          sport: entry.sport?.name ?? 'MultiSport',
+          sport: entry.sport?.name ?? 'AthletIQ',
         }))
         setLeaderboard(injectCurrentUser(mapped))
       } catch (error) {
@@ -403,12 +410,28 @@ export default function DashboardPage() {
     })
   }, [supabase, toast])
 
-  const handleJoinChallenge = () => {
-    toast({
-      title: 'Challenge joined!',
-      description: "Good luck with today's challenge!",
-    })
-  }
+  const handleJoinChallenge = useCallback((challenge: Challenge) => {
+    setSelectedChallenge(challenge)
+    setJoinDialogOpen(true)
+  }, [])
+
+  const handleJoinOpenChange = useCallback((open: boolean) => {
+    setJoinDialogOpen(open)
+
+    if (!open) {
+      setSelectedChallenge(null)
+    }
+  }, [])
+
+  const handleConfirmChallenge = useCallback((challenge: Challenge) => {
+    handleJoinOpenChange(false)
+
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(DAILY_CHALLENGE_STORAGE_KEY, JSON.stringify(challenge))
+    }
+
+    router.push('/challenge-arena')
+  }, [handleJoinOpenChange, router])
 
   const handleUploadComplete = useCallback((payload: UploadClipSuccessPayload) => {
     const fallbackSport = payload.form.sportName || payload.form.sportSlug
@@ -447,7 +470,22 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-3 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DailyChallengeCard challenge={mockChallenge} onJoin={handleJoinChallenge} />
+                {dailyChallenge ? (
+                  <DailyChallengeCard challenge={dailyChallenge} onJoin={handleJoinChallenge} />
+                ) : (
+                  <Card className="border-dashed border-muted-foreground/20 bg-card/70 shadow-sm" aria-busy={dailyChallengeLoading}>
+                    <CardContent className="space-y-4 p-4 animate-pulse">
+                      <div className="h-5 w-32 rounded-full bg-muted" />
+                      <div className="aspect-video w-full rounded-lg bg-muted" />
+                      <div className="h-3 w-3/4 rounded-full bg-muted" />
+                      <div className="flex items-center justify-between">
+                        <div className="h-3 w-20 rounded-full bg-muted" />
+                        <div className="h-3 w-10 rounded-full bg-muted" />
+                      </div>
+                      <div className="h-9 w-full rounded-md bg-muted" />
+                    </CardContent>
+                  </Card>
+                )}
                 <div className="space-y-4">
                   <StreakWidget streakData={streak} />
                   <Button className="w-full" onClick={() => setIsUploadOpen(true)}>
@@ -547,6 +585,13 @@ export default function DashboardPage() {
 
         <MobileNav />
       </div>
+
+      <JoinChallengeDialog
+        challenge={selectedChallenge}
+        open={joinDialogOpen}
+        onOpenChange={handleJoinOpenChange}
+        onConfirm={handleConfirmChallenge}
+      />
 
       <UploadClipDialog
         open={isUploadOpen}
