@@ -1,19 +1,6 @@
 import { NextResponse } from 'next/server'
 
 import { createServerClient } from '@/lib/supabase-server'
-import type { Database } from '@/types/database'
-
-type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
-
-type ProfilesClient = {
-  from(table: 'profiles'): {
-    upsert(values: ProfileInsert, options?: { onConflict?: string }): {
-      select(columns: string): {
-        maybeSingle<T>(): Promise<{ data: T | null; error: unknown }>
-      }
-    }
-  }
-}
 
 function resolveRedirectPath(candidate: string | null | undefined) {
   if (!candidate) {
@@ -54,7 +41,6 @@ export async function GET(request: Request) {
   let destination = fallbackRedirect
 
   if (user) {
-    let hasProfile = false
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
@@ -65,36 +51,8 @@ export async function GET(request: Request) {
       console.error('[api/auth/callback] profile lookup', profileError)
     }
 
-    if (profile?.id) {
-      hasProfile = true
-    } else {
-      const fallbackName =
-        typeof user.user_metadata?.full_name === 'string'
-          ? user.user_metadata.full_name
-          : user.email?.split('@')[0] ?? 'Athlete'
-      const defaultProfile: ProfileInsert = {
-        id: user.id,
-        display_name: fallbackName,
-        username: typeof user.user_metadata?.user_name === 'string' ? user.user_metadata.user_name : null,
-        avatar_url: typeof user.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : null,
-      }
-
-      const profilesClient = supabase as unknown as ProfilesClient
-      const { data: upsertedProfile, error: upsertError } = await profilesClient
-        .from('profiles')
-        .upsert(defaultProfile, { onConflict: 'id' })
-        .select('id')
-        .maybeSingle<{ id: string }>()
-
-      if (upsertError) {
-        console.error('[api/auth/callback] profile upsert', upsertError)
-      }
-
-      hasProfile = Boolean(upsertedProfile?.id)
-
-      if (!hasProfile) {
-        destination = '/dashboard'
-      }
+    if (!profileError) {
+      destination = profile?.id ? destination : '/onboarding'
     }
   } else {
     destination = '/login?error=auth'
