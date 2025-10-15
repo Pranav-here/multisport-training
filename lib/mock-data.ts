@@ -24,11 +24,16 @@ export interface Challenge {
   title: string
   description: string
   sport: string
+  sportSlug: string
   difficulty: "easy" | "medium" | "hard"
   points: number
-  timeLeft: string
   participants: number
   thumbnail: string
+  instructions: string[]
+  challengeDate: string
+  timeZone: string
+  generatedAt: string
+  deadline: string
 }
 
 export interface StreakData {
@@ -178,11 +183,20 @@ export const mockChallenge: Challenge = {
   title: "First Touch Friday",
   description: "Practice your first touch control with both feet. Complete 20 successful touches in a row!",
   sport: "Soccer",
+  sportSlug: "soccer",
   difficulty: "medium",
   points: 50,
-  timeLeft: "18h 32m",
   participants: 1247,
   thumbnail: "/soccer-ball-control-challenge.png",
+  instructions: [
+    "Juggle with alternating feet for 2 minutes to activate your touch.",
+    "Receive and cushion 20 passes with your weaker foot, keeping the ball within one step.",
+    "Finish with 10 one-touch wall passes, focusing on quick reset steps.",
+  ],
+  challengeDate: "2025-10-09",
+  timeZone: "America/Chicago",
+  generatedAt: "2025-10-09T12:00:00.000Z",
+  deadline: "2025-10-10T05:00:00.000Z",
 }
 
 export const mockStreakData: StreakData = {
