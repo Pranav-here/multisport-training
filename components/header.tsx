@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Search, Bell, Moon, Sun, User, Settings, LogOut } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -100,10 +101,15 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center space-x-2">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-green-500 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">MS</span>
-          </div>
-          <span className="font-bold text-xl">MultiSport</span>
+          <Image
+            src="/athleIQ-icon-64.png"
+            alt="AthletIQ logo"
+            width={32}
+            height={32}
+            priority
+            className="h-8 w-8 rounded-lg transition-transform duration-200 hover:scale-105"
+          />
+          <span className="font-bold text-xl">AthletIQ</span>
         </Link>
 
         <div className="hidden md:flex flex-1 max-w-md mx-8">
