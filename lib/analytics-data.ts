@@ -80,7 +80,7 @@ export const mockAnalyticsData: AnalyticsData = {
     },
     {
       id: "2",
-      title: "Week Warrior",
+      title: "Streak Warrior",
       description: "Trained for 7 consecutive days",
       date: "2024-01-22",
       type: "milestone",
@@ -183,7 +183,7 @@ export const mockUserProfile: UserProfile = {
   ],
   achievements: [
     { id: "1", title: "First Goal!", icon: "Target", earnedDate: "2024-01-15" },
-    { id: "2", title: "Week Warrior", icon: "Calendar", earnedDate: "2024-01-22" },
+    { id: "2", title: "Streak Warrior", icon: "Calendar", earnedDate: "2024-01-22" },
     { id: "3", title: "Multi-Sport Master", icon: "Trophy", earnedDate: "2024-02-01" },
     { id: "4", title: "Century Club", icon: "Award", earnedDate: "2024-02-15" },
   ],
