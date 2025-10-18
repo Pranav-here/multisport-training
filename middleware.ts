@@ -2,6 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { createServerClient as createSupabaseServerClient, type CookieOptions } from '@supabase/ssr'
 
+import {
+  PLACEHOLDER_AUTH_COOKIE,
+  PLACEHOLDER_AUTH_COOKIE_VALUE,
+  isPlaceholderAuthEnabled,
+} from '@/lib/auth-placeholder'
+
 const supabaseUrl = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
@@ -10,6 +16,24 @@ const PUBLIC_PATHS = ['/', '/about', '/guidelines', '/login']
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
+  const { pathname } = request.nextUrl
+  const placeholderAuthEnabled = isPlaceholderAuthEnabled()
+  const placeholderSessionActive =
+    placeholderAuthEnabled && request.cookies.get(PLACEHOLDER_AUTH_COOKIE)?.value === PLACEHOLDER_AUTH_COOKIE_VALUE
+
+  if (placeholderSessionActive) {
+    if (pathname === '/login') {
+      const redirectedFrom = request.nextUrl.searchParams.get('redirectedFrom')
+      const target =
+        redirectedFrom && redirectedFrom.startsWith('/') && !redirectedFrom.startsWith('//')
+          ? redirectedFrom
+          : '/onboarding'
+
+      return NextResponse.redirect(new URL(target, request.url))
+    }
+
+    return response
+  }
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('[middleware] Supabase environment variables are missing; bypassing auth checks.')
@@ -42,7 +66,6 @@ export async function middleware(request: NextRequest) {
   })
 
   const { data: { session } } = await supabase.auth.getSession()
-  const { pathname } = request.nextUrl
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
   const isApiRoute = pathname.startsWith('/api')
