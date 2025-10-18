@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+﻿import { createClient } from "@supabase/supabase-js"
 import { readFileSync } from "fs"
 import { resolve } from "path"
 
@@ -212,7 +212,7 @@ async function seedDrills(adminUserId) {
         'Step back to the free-throw line and establish a routine',
         'Shoot sets of 5, tracking makes',
         'Pause between shots to reset form',
-        'Finish with pressure shots � imagine game scenarios',
+        'Finish with pressure shots — imagine game scenarios',
       ],
       video_url: '/basketball-free-throw-demo.mp4',
       thumbnail_url: '/basketball-free-throw-drill.png',
@@ -315,7 +315,7 @@ async function seedAchievements(adminUserId) {
     },
     {
       slug: 'week-warrior',
-      name: 'Week Warrior',
+      name: 'Streak Warrior',
       description: 'Trained for 7 consecutive days',
       icon: 'Calendar',
       type: 'milestone',
@@ -502,6 +502,7 @@ async function run() {
 }
 
 run()
+
 
 
 
