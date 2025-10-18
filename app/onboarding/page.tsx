@@ -511,21 +511,17 @@ export default function OnboardingPage() {
   }
 
   const handleFinish = async () => {
-    if (!session?.user) {
-      toast({
-        title: 'Please sign in again',
-        description: 'Your session expired. Log in and try once more.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    setIsSaving(true)
     const redirectToDashboard = () => {
       router.push('/dashboard')
       router.refresh()
     }
 
+    if (!session?.user) {
+      redirectToDashboard()
+      return
+    }
+
+    setIsSaving(true)
     try {
       const fallbackName = session.user.user_metadata?.full_name || session.user.email || 'Athlete'
       const finalName = displayName.trim() || fallbackName
