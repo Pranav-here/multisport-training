@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
 export default function DrillDetailPage() {
-  const params = useParams()
+  const params = useParams<{ id?: string | string[] }>()
   const router = useRouter()
   const { toast } = useToast()
   const [isRecording, setIsRecording] = useState(false)
@@ -41,10 +41,13 @@ export default function DrillDetailPage() {
   })
 
   const [demoThumbnail, setDemoThumbnail] = useState('/placeholder.svg')
+  const drillIdParam = params?.id
+  const drillId =
+    typeof drillIdParam === 'string' ? drillIdParam : Array.isArray(drillIdParam) ? drillIdParam[0] : undefined
   // Find the drill from all sports
   const drill = Object.values(mockDrills)
     .flat()
-    .find((d) => d.id === params.id)
+    .find((d) => d.id === drillId)
 
 
   useEffect(() => {
