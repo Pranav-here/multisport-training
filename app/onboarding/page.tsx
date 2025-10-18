@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check } from 'lucide-react'
+import { Check, Sparkles, Target, User } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 import { AuthGuard } from '@/components/auth-guard'
 import { Button } from '@/components/ui/button'
@@ -10,9 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import type { Database } from '@/types/database'
@@ -121,52 +121,62 @@ const sportAccents: Record<
     bar: string
     card: string
     badge: string
+    glow: string
   }
 > = {
   basketball: {
     bar: 'from-orange-500 via-amber-400 to-orange-500',
-    card: 'border-orange-500/80 bg-orange-500/5 shadow-[0_18px_40px_-18px_rgba(249,115,22,0.5)]',
+    card: 'border border-white/5 bg-gradient-to-br from-orange-500/14 via-orange-500/7 to-transparent shadow-[0_34px_100px_-80px_rgba(249,115,22,0.45)] ring-1 ring-orange-400/25',
     badge: 'bg-orange-500/15 text-orange-600',
+    glow: 'from-orange-500/45 via-amber-400/15 to-orange-500/45',
   },
   soccer: {
     bar: 'from-emerald-500 via-lime-400 to-emerald-500',
-    card: 'border-emerald-500/80 bg-emerald-500/5 shadow-[0_18px_40px_-18px_rgba(16,185,129,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-emerald-500/14 via-lime-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(16,185,129,0.4)] ring-1 ring-emerald-400/25',
     badge: 'bg-emerald-500/15 text-emerald-600',
+    glow: 'from-emerald-500/45 via-lime-400/18 to-emerald-500/45',
   },
   tennis: {
     bar: 'from-yellow-500 via-lime-400 to-emerald-400',
-    card: 'border-yellow-500/80 bg-yellow-500/5 shadow-[0_18px_40px_-18px_rgba(234,179,8,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-yellow-400/14 via-lime-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(234,179,8,0.38)] ring-1 ring-yellow-400/25',
     badge: 'bg-yellow-500/15 text-yellow-600',
+    glow: 'from-yellow-400/42 via-lime-400/18 to-emerald-400/40',
   },
   running: {
     bar: 'from-sky-500 via-blue-400 to-sky-500',
-    card: 'border-sky-500/80 bg-sky-500/5 shadow-[0_18px_40px_-18px_rgba(56,189,248,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-sky-500/14 via-blue-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(56,189,248,0.42)] ring-1 ring-sky-400/25',
     badge: 'bg-sky-500/15 text-sky-600',
+    glow: 'from-sky-500/45 via-blue-400/18 to-cyan-400/40',
   },
   cricket: {
     bar: 'from-rose-500 via-red-400 to-rose-500',
-    card: 'border-rose-500/80 bg-rose-500/5 shadow-[0_18px_40px_-18px_rgba(244,63,94,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-rose-500/14 via-red-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(244,63,94,0.46)] ring-1 ring-rose-400/25',
     badge: 'bg-rose-500/15 text-rose-600',
+    glow: 'from-rose-500/48 via-red-400/18 to-pink-500/40',
   },
   rugby: {
     bar: 'from-lime-500 via-emerald-400 to-lime-500',
-    card: 'border-lime-500/80 bg-lime-500/5 shadow-[0_18px_40px_-18px_rgba(132,204,22,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-lime-500/14 via-emerald-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(132,204,22,0.4)] ring-1 ring-lime-400/25',
     badge: 'bg-lime-500/15 text-lime-600',
+    glow: 'from-lime-500/42 via-emerald-400/18 to-lime-400/40',
   },
   baseball: {
     bar: 'from-cyan-500 via-sky-400 to-cyan-500',
-    card: 'border-cyan-500/80 bg-cyan-500/5 shadow-[0_18px_40px_-18px_rgba(6,182,212,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-cyan-500/14 via-sky-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(6,182,212,0.42)] ring-1 ring-cyan-400/25',
     badge: 'bg-cyan-500/15 text-cyan-600',
+    glow: 'from-cyan-500/45 via-sky-400/18 to-blue-400/40',
   },
   lacrosse: {
     bar: 'from-purple-500 via-indigo-400 to-purple-500',
-    card: 'border-purple-500/80 bg-purple-500/5 shadow-[0_18px_40px_-18px_rgba(168,85,247,0.45)]',
+    card: 'border border-white/5 bg-gradient-to-br from-purple-500/14 via-indigo-400/7 to-transparent shadow-[0_34px_100px_-80px_rgba(168,85,247,0.46)] ring-1 ring-purple-400/25',
     badge: 'bg-purple-500/15 text-purple-600',
+    glow: 'from-purple-500/45 via-indigo-400/18 to-fuchsia-500/40',
   },
   'american-football': {
     bar: 'from-amber-600 via-orange-500 to-amber-600',
-    card: 'border-amber-600/80 bg-amber-500/5 shadow-[0_18px_40px_-18px_rgba(217,119,6,0.5)]',
+    card: 'border border-white/5 bg-gradient-to-br from-amber-600/14 via-orange-500/7 to-transparent shadow-[0_34px_100px_-80px_rgba(217,119,6,0.48)] ring-1 ring-amber-500/25',
     badge: 'bg-amber-500/15 text-amber-600',
+    glow: 'from-amber-600/45 via-orange-500/18 to-red-500/35',
   },
 }
 
@@ -178,6 +188,44 @@ const privacyOptions = [
 
 const steps = ['sports', 'profile', 'goals'] as const
 type Step = typeof steps[number]
+
+const stepMeta: Record<
+  Step,
+  {
+    label: string
+    icon: LucideIcon
+    tagline: string
+    description: string
+  }
+> = {
+  sports: {
+    label: 'Sports',
+    icon: Sparkles,
+    tagline: 'Pick your disciplines',
+    description:
+      'Select the sports that define your season so daily challenges, leaderboards, and highlights bend around them.',
+  },
+  profile: {
+    label: 'Profile',
+    icon: User,
+    tagline: 'Dial in the basics',
+    description:
+      'Share who you rep and where you train so team invites, streaks, and workload insights sync with your real world.',
+  },
+  goals: {
+    label: 'Goals',
+    icon: Target,
+    tagline: 'Lock your focus',
+    description:
+      'Tell us the first arcs we should push and commit to the safe recording pledge to unlock clip sharing.',
+  },
+}
+
+const wizardShellClass =
+  'relative isolate overflow-hidden !gap-0 rounded-[28px] border border-white/12 bg-background/82 !py-10 shadow-[0_55px_140px_-100px_rgba(15,23,42,0.5)] backdrop-blur-xl transition-[box-shadow,transform] duration-500 hover:translate-y-[-1px] hover:shadow-[0_75px_180px_-110px_rgba(37,99,235,0.45)]'
+
+const fieldShellClass =
+  'group relative rounded-2xl border border-white/14 bg-white/6 p-5 shadow-[0_30px_90px_-70px_rgba(15,23,42,0.45)] transition-all duration-300 focus-within:border-white/25 focus-within:bg-white/10 focus-within:shadow-[0_55px_130px_-80px_rgba(37,99,235,0.45)]'
 
 interface SportOption {
   id: number
@@ -228,6 +276,7 @@ export default function OnboardingPage() {
 
   const currentStep: Step = steps[stepIndex]
   const progressPercent = Math.round(((stepIndex + 1) / steps.length) * 100)
+  const currentMeta = stepMeta[currentStep]
   const canFinish = selectedGoals.length > 0 && hasAcceptedTerms
 
   const resolvedSports = useMemo<SportOption[]>(() => {
@@ -277,7 +326,7 @@ export default function OnboardingPage() {
       const items = baseGoals.map((goal) => {
         const goalId = `${slug}:${goal.id}`
         selectionMap[goalId] = {
-          label: `${sportName} · ${goal.label}`,
+          label: `${sportName} - ${goal.label}`,
           sportName,
         }
 
@@ -407,6 +456,21 @@ export default function OnboardingPage() {
     }
   }
 
+  const handleStepSelect = (index: number) => {
+    if (index === stepIndex) {
+      return
+    }
+
+    if (index < stepIndex) {
+      setStepIndex(index)
+      return
+    }
+
+    if (index === stepIndex + 1 && canContinue()) {
+      setStepIndex(index)
+    }
+  }
+
   const handleFinish = async () => {
     if (!session?.user) {
       toast({
@@ -485,9 +549,10 @@ export default function OnboardingPage() {
         }
       }
 
-      await refreshProfile()
+      await refreshProfile().catch(() => null)
 
-      router.replace('/dashboard')
+      router.push('/dashboard')
+      router.refresh()
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Something went wrong. Try again.'
       toast({
@@ -502,126 +567,207 @@ export default function OnboardingPage() {
 
   return (
     <AuthGuard>
-      <div className='min-h-screen bg-background'>
-        <div className='mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10 sm:py-16'>
-          <header className='space-y-2 text-center'>
-            <h1 className='text-3xl font-semibold sm:text-4xl'>Set up your AthletIQs profile</h1>
-            <p className='text-sm text-muted-foreground sm:text-base'>Tell us how you train so your dashboard and recommendations stay relevant.</p>
-          </header>
+      <div className='relative min-h-screen overflow-hidden bg-background'>
+        <span className='pointer-events-none absolute -top-24 -left-24 hidden h-[420px] w-[420px] rounded-full bg-gradient-to-br from-sport-blue/20 via-sport-green/10 to-transparent blur-[140px] sm:block' />
+        <span className='pointer-events-none absolute bottom-[-28%] right-[-18%] h-[480px] w-[480px] rounded-full bg-gradient-to-br from-sport-orange/18 via-sport-blue/10 to-transparent blur-[150px]' />
+        <span className='pointer-events-none absolute top-1/2 left-[80%] hidden h-72 w-72 -translate-y-1/2 rounded-full bg-gradient-to-br from-sport-green/14 via-transparent to-sport-orange/12 blur-[110px] md:block' />
 
-          <div className='flex items-center gap-4'>
-            <Progress className='h-2 flex-1' value={progressPercent} />
-            <span className='text-sm font-medium text-muted-foreground'>{progressPercent}%</span>
-          </div>
+        <div className='relative mx-auto w-full max-w-5xl px-4 py-16 sm:px-6 lg:px-8'>
+          <div className='relative isolate overflow-hidden rounded-[36px] border border-border/60 bg-background/85 p-6 shadow-[0_95px_220px_-130px_rgba(12,21,38,0.85)] backdrop-blur-2xl dark:border-white/10 sm:p-10'>
+            <div className='pointer-events-none absolute inset-0 opacity-70'>
+              <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--sport-blue)/0.22,transparent_65%)]' />
+              <div className='absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,var(--sport-orange)/0.18,transparent_60%)]' />
+            </div>
 
-          <Tabs value={currentStep} className='w-full'>
-            <TabsList className='grid grid-cols-3'>
-              <TabsTrigger value='sports'>Sports</TabsTrigger>
-              <TabsTrigger value='profile'>Details</TabsTrigger>
-              <TabsTrigger value='goals'>Goals</TabsTrigger>
-            </TabsList>
+            <div className='relative flex flex-col gap-10'>
+              <header className='flex flex-col items-center gap-4 text-center sm:items-start sm:text-left'>
+                <span className='inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/6 px-4 py-1 text-[0.68rem] uppercase tracking-[0.35em] text-muted-foreground/75'>
+                  <currentMeta.icon className='h-3.5 w-3.5 text-sport-green' />
+                  Step {stepIndex + 1} of {steps.length}
+                </span>
+                <h1 className='text-3xl font-semibold sm:text-4xl md:text-5xl'>Dial in your multi-sport cockpit</h1>
+                <p className='max-w-2xl text-sm text-muted-foreground/90 sm:text-base'>
+                  AthletIQs uses these signals to align daily challenges, cross-sport workloads, and highlight moments with how you actually train.
+                </p>
+                <p className='max-w-2xl text-sm text-muted-foreground sm:text-base'>{currentMeta.description}</p>
+              </header>
 
-            <TabsContent value='sports'>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Select your sports</CardTitle>
-                  <CardDescription>Pick at least one sport to unlock tailored drills and leaderboards.</CardDescription>
-                </CardHeader>
-                <CardContent className='space-y-6'>
-                  <div className='grid gap-3 sm:grid-cols-2'>
-                    {resolvedSports.map((sport) => {
-                      const selected = selectedSports.includes(sport.slug)
-                      const accent = sportAccents[sport.slug]
-                      return (
-                        <button
-                          key={sport.slug}
-                          type='button'
-                          onClick={() => toggleSport(sport.slug)}
-                          aria-pressed={selected}
-                          className={cn(
-                            'group relative flex h-full flex-col justify-between gap-3 rounded-xl border bg-card/40 p-4 text-left transition duration-200 hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-                            selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-border hover:bg-muted/40',
-                            selected && accent?.card
-                          )}
-                        >
-                          <span
-                            aria-hidden='true'
-                            className={cn(
-                              'pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-xl bg-gradient-to-r opacity-0 transition duration-200',
-                              accent?.bar,
-                              selected ? 'opacity-100' : 'group-hover:opacity-80'
-                            )}
-                          />
-                          <div className='space-y-2'>
-                            <h3 className='text-lg font-semibold'>{sport.name}</h3>
-                            <p className='text-sm leading-snug text-muted-foreground'>{sport.summary}</p>
-                          </div>
-                          <div className='mt-auto flex items-center justify-between text-xs font-semibold'>
-                            {selected ? (
+              <div className='relative overflow-hidden rounded-2xl border border-white/10 bg-background/65 p-5 shadow-[0_45px_120px_-100px_rgba(37,99,235,0.35)] backdrop-blur-xl'>
+                <span className='pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/18 via-sport-green/12 to-sport-orange/18 opacity-45 blur-xl' />
+                <div className='relative flex flex-col gap-3 sm:flex-row sm:items-center'>
+                  <div className='relative flex-1 overflow-hidden rounded-full bg-white/10'>
+                    <span
+                      className='absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange transition-all duration-500'
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                    <span className='pointer-events-none absolute inset-0 rounded-full border border-white/12' />
+                  </div>
+                  <span className='text-[0.68rem] font-semibold uppercase tracking-[0.35em] text-muted-foreground/70'>
+                    {progressPercent}% synced
+                  </span>
+                </div>
+
+                <div className='relative mt-4 grid gap-2 sm:grid-cols-3'>
+                  {steps.map((step, index) => {
+                    const meta = stepMeta[step]
+                    const isActive = index === stepIndex
+                    const isComplete = index < stepIndex
+                    const isClickable = index <= stepIndex || (index === stepIndex + 1 && canContinue())
+
+                    return (
+                      <button
+                        key={step}
+                        type='button'
+                        onClick={() => handleStepSelect(index)}
+                        disabled={!isClickable}
+                        className={cn(
+                          'group relative flex h-full items-center gap-3 overflow-hidden rounded-xl border border-white/10 bg-background/60 px-4 py-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-60',
+                          isActive && 'border-white/20 bg-gradient-to-r from-sport-blue/18 via-sport-green/14 to-sport-orange/18 shadow-[0_45px_130px_-95px_rgba(37,99,235,0.5)]',
+                          isComplete && !isActive && 'border-white/14 bg-background/62 text-foreground/85'
+                        )}
+                        aria-current={isActive}
+                      >
+                        <span className='relative flex h-10 w-10 items-center justify-center rounded-full border border-white/12 bg-white/8'>
+                          <meta.icon className={cn('h-4 w-4 transition-colors', isActive ? 'text-foreground' : 'text-muted-foreground/70')} />
+                        </span>
+                        <span className='flex flex-col leading-tight'>
+                          <span className='text-[0.68rem] font-semibold uppercase tracking-[0.32em]'>{meta.label}</span>
+                          <span className='text-xs text-muted-foreground/70'>{meta.tagline}</span>
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <Tabs value={currentStep} className='w-full'>
+                <TabsContent value='sports'>
+                  <Card className={cn(wizardShellClass)}>
+                    <div className='pointer-events-none absolute inset-0 opacity-70'>
+                      <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--sport-blue)/0.22,transparent_62%)]' />
+                      <div className='absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,var(--sport-orange)/0.2,transparent_60%)]' />
+                    </div>
+                    <CardHeader className='relative z-10 space-y-4 px-10 pb-10'>
+                      <CardTitle className='text-2xl font-semibold sm:text-3xl'>Select your sports</CardTitle>
+                      <CardDescription className='max-w-2xl text-base text-muted-foreground sm:text-lg'>
+                        Pick at least one sport to unlock curated drills, rival leaderboards, and hybrid training playlists.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className='relative z-10 space-y-8 px-10 pb-12'>
+                      <div className='grid gap-4 sm:grid-cols-2'>
+                        {resolvedSports.map((sport) => {
+                          const selected = selectedSports.includes(sport.slug)
+                          const accent = sportAccents[sport.slug]
+                          return (
+                            <button
+                              key={sport.slug}
+                              type='button'
+                              onClick={() => toggleSport(sport.slug)}
+                              aria-pressed={selected}
+                              className={cn(
+                                'group relative isolate flex h-full flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-white/10 bg-background/62 p-6 text-left shadow-[0_38px_120px_-100px_rgba(15,23,42,0.55)] transition-all duration-300 hover:-translate-y-1 hover:border-white/18 hover:shadow-[0_58px_150px_-110px_rgba(37,99,235,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                                selected && 'text-foreground',
+                                selected && accent?.card
+                              )}
+                            >
                               <span
+                                aria-hidden='true'
                                 className={cn(
-                                  'inline-flex items-center gap-2 rounded-full px-2 py-1',
-                                  accent?.badge ?? 'bg-primary/10 text-primary'
+                                  'pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r opacity-0 transition duration-300',
+                                  accent?.bar,
+                                  selected ? 'opacity-100' : 'group-hover:opacity-80'
+                                )}
+                              />
+                              <span
+                                aria-hidden='true'
+                                className={cn(
+                                  'pointer-events-none absolute -inset-24 -z-10 bg-gradient-to-br opacity-0 blur-3xl transition duration-500',
+                                  accent?.glow,
+                                  selected ? 'opacity-90' : 'group-hover:opacity-75'
+                                )}
+                              />
+                              <span className='pointer-events-none absolute inset-[1px] rounded-[inherit] border border-white/10 transition duration-300 group-hover:border-white/16 group-aria-[pressed=true]:border-white/22' />
+                              <div className='relative z-10 space-y-3'>
+                                <h3 className='text-xl font-semibold tracking-tight'>{sport.name}</h3>
+                                <p className='text-sm leading-relaxed text-muted-foreground/80'>{sport.summary}</p>
+                              </div>
+                              <div className='relative z-10 mt-auto flex items-center justify-between text-[0.68rem] font-medium uppercase tracking-[0.32em] text-muted-foreground/70'>
+                                {selected ? (
+                                  <span
+                                    className={cn(
+                                      'inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.32em]',
+                                      accent?.badge ?? 'bg-primary/10 text-primary'
+                                    )}
+                                  >
+                                    <Check className='h-3.5 w-3.5' />
+                                    Added
+                                  </span>
+                                ) : (
+                                  <span className='text-muted-foreground/75'>Tap to add</span>
+                                )}
+                                <span className='text-[0.58rem] uppercase tracking-[0.3em] text-muted-foreground/60'>Active</span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      <div className='space-y-4 rounded-2xl border border-white/10 bg-background/62 p-6 shadow-[0_40px_140px_-110px_rgba(15,23,42,0.45)]'>
+                        <p className='text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Current skill level</p>
+                        <RadioGroup value={skillLevel} onValueChange={setSkillLevel} className='mt-3 grid gap-3 sm:grid-cols-3'>
+                          {skillLevels.map((level) => {
+                            const selected = skillLevel === level.id
+                            const inputId = `skill-${level.id}`
+                            return (
+                              <Label
+                                key={level.id}
+                                htmlFor={inputId}
+                                className={cn(
+                                  'group relative isolate flex h-full cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-background/62 p-4 text-left shadow-[0_28px_110px_-95px_rgba(15,23,42,0.45)] transition-all duration-300 hover:border-white/18 hover:shadow-[0_58px_150px_-120px_rgba(37,99,235,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                                  selected && 'border-white/22 bg-gradient-to-br from-sport-blue/16 via-sport-green/10 to-transparent text-foreground shadow-[0_68px_160px_-120px_rgba(37,99,235,0.5)]'
                                 )}
                               >
-                                <Check className='h-3.5 w-3.5' />
-                                Added
-                              </span>
-                            ) : (
-                              <span className='text-muted-foreground/80'>Tap to add</span>
-                            )}
-                            <span className='text-[10px] uppercase tracking-wide text-muted-foreground/70'>
-                              {selected ? 'Active' : 'Available'}
-                            </span>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
+                                <RadioGroupItem id={inputId} value={level.id} className='sr-only' />
+                                <div className='relative z-10 space-y-1'>
+                                  <span className='text-sm font-semibold'>{level.label}</span>
+                                  <span className='text-xs text-muted-foreground/75'>{level.description}</span>
+                                </div>
+                                {selected && (
+                                  <span className='relative z-10 inline-flex items-center gap-1 text-xs font-semibold text-sport-blue'>
+                                    <Check className='h-3 w-3' />
+                                    Selected
+                                  </span>
+                                )}
+                              </Label>
+                            )
+                          })}
+                        </RadioGroup>
+                      </div>
 
-                  <div className='space-y-3'>
-                    <p className='text-sm font-medium'>Current skill level</p>
-                    <RadioGroup value={skillLevel} onValueChange={setSkillLevel} className='grid gap-3 sm:grid-cols-3'>
-                      {skillLevels.map((level) => {
-                        const selected = skillLevel === level.id
-                        const inputId = `skill-${level.id}`
-                        return (
-                          <Label
-                            key={level.id}
-                            htmlFor={inputId}
-                            className={cn(
-                              'flex h-full cursor-pointer flex-col rounded-lg border bg-card/40 p-4 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-                              selected ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/40' : 'border-border hover:border-primary/60'
-                            )}
-                          >
-                            <RadioGroupItem id={inputId} value={level.id} className='sr-only' />
-                            <span className='font-semibold'>{level.label}</span>
-                            <span className='mt-1 text-xs text-muted-foreground'>{level.description}</span>
-                            {selected && (
-                              <span className='mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary'>
-                                <Check className='h-3 w-3' />
-                                Selected
-                              </span>
-                            )}
-                          </Label>
-                        )
-                      })}
-                    </RadioGroup>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                      <div className='rounded-2xl border border-dashed border-white/20 bg-background/55 p-5 text-sm text-muted-foreground/80 shadow-[0_70px_190px_-130px_rgba(15,23,42,0.6)]'>
+                        Pro tip: add at least two sports to unlock hybrid challenges and crossover leaderboards right away.
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
 
             <TabsContent value='profile'>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Profile details</CardTitle>
-                  <CardDescription>Fill out the essentials so teammates can find you and we can tailor your recommendations.</CardDescription>
+              <Card className={cn(wizardShellClass)}>
+                <div className='pointer-events-none absolute inset-0 opacity-70'>
+                  <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--sport-green)/0.2,transparent_60%)]' />
+                  <div className='absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,var(--sport-blue)/0.18,transparent_60%)]' />
+                </div>
+                <CardHeader className='relative z-10 space-y-4 px-10 pb-10'>
+                  <CardTitle className='text-2xl font-semibold sm:text-3xl'>Profile details</CardTitle>
+                  <CardDescription className='max-w-2xl text-base text-muted-foreground sm:text-lg'>
+                    Fill out the essentials so teammates and clubs can recognise you instantly.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className='space-y-5'>
+                <CardContent className='relative z-10 space-y-8 px-10 pb-12'>
                   <div className='grid gap-4 sm:grid-cols-2'>
-                    <div className='space-y-2'>
-                      <Label htmlFor='displayName'>Display name</Label>
+                    <div className={fieldShellClass}>
+                      <Label htmlFor='displayName' className='text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Display name</Label>
                       <Input
                         id='displayName'
                         value={displayName}
@@ -629,10 +775,11 @@ export default function OnboardingPage() {
                         placeholder='Jordan Taylor'
                         required
                         autoComplete='name'
+                        className='mt-3 h-11 rounded-xl border border-white/25 bg-white/[0.12] px-4 text-base font-semibold text-foreground placeholder:text-muted-foreground/55 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] focus-visible:border-white/35 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-0'
                       />
                     </div>
-                    <div className='space-y-2'>
-                      <Label htmlFor='location'>Location</Label>
+                    <div className={fieldShellClass}>
+                      <Label htmlFor='location' className='text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Location</Label>
                       <Input
                         id='location'
                         value={location}
@@ -640,13 +787,14 @@ export default function OnboardingPage() {
                         placeholder='Austin, TX'
                         required
                         autoComplete='address-level2'
+                        className='mt-3 h-11 rounded-xl border border-white/25 bg-white/[0.12] px-4 text-base font-semibold text-foreground placeholder:text-muted-foreground/55 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)] focus-visible:border-white/35 focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-0'
                       />
                     </div>
                   </div>
 
-                  <div className='space-y-3'>
-                    <p className='text-sm font-medium'>Gender</p>
-                    <RadioGroup value={gender} onValueChange={setGender} className='grid gap-3 sm:grid-cols-2'>
+                  <div className='space-y-4 rounded-2xl border border-white/12 bg-background/70 p-6 shadow-[0_70px_190px_-130px_rgba(15,23,42,0.6)]'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Gender</p>
+                    <RadioGroup value={gender} onValueChange={setGender} className='mt-3 grid gap-3 sm:grid-cols-2'>
                       {genderOptions.map((option) => {
                         const selected = gender === option.id
                         const inputId = `gender-${option.id}`
@@ -655,14 +803,14 @@ export default function OnboardingPage() {
                             key={option.id}
                             htmlFor={inputId}
                             className={cn(
-                              'flex cursor-pointer flex-col rounded-lg border bg-card/40 p-4 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-                              selected ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/40' : 'border-border hover:border-primary/60'
+                              'group relative isolate flex cursor-pointer items-center justify-between gap-4 overflow-hidden rounded-2xl border border-white/10 bg-background/60 p-4 text-sm font-semibold shadow-[0_32px_120px_-110px_rgba(15,23,42,0.45)] transition-all duration-300 hover:border-white/18 hover:shadow-[0_62px_160px_-120px_rgba(37,99,235,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                              selected && 'border-white/22 bg-gradient-to-r from-sport-green/18 via-sport-blue/10 to-transparent text-foreground shadow-[0_78px_170px_-130px_rgba(37,99,235,0.5)]'
                             )}
                           >
                             <RadioGroupItem id={inputId} value={option.id} className='sr-only' />
-                            <span className='font-semibold'>{option.label}</span>
+                            <span className='relative z-10'>{option.label}</span>
                             {selected && (
-                              <span className='mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary'>
+                              <span className='relative z-10 inline-flex items-center gap-1 text-xs font-semibold text-sport-green'>
                                 <Check className='h-3 w-3' />
                                 Selected
                               </span>
@@ -673,51 +821,73 @@ export default function OnboardingPage() {
                     </RadioGroup>
                   </div>
 
-                  <div className='space-y-2'>
-                    <Label htmlFor='affiliation'>Team or club</Label>
-                    <Input
-                      id='affiliation'
-                      value={affiliation}
-                      onChange={(event) => setAffiliation(event.target.value)}
-                      placeholder='River City United'
-                    />
+                  <div className='grid gap-4 sm:grid-cols-2'>
+                    <div className={fieldShellClass}>
+                      <Label htmlFor='affiliation' className='text-[0.68rem] font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Team or club</Label>
+                      <Input
+                        id='affiliation'
+                        value={affiliation}
+                        onChange={(event) => setAffiliation(event.target.value)}
+                        placeholder='River City United'
+                        className='mt-2 h-auto border-none bg-transparent px-0 text-base font-semibold text-foreground placeholder:text-muted-foreground/40 focus-visible:border-transparent focus-visible:ring-0 focus-visible:ring-offset-0'
+                      />
+                    </div>
+                  <div className='rounded-2xl border border-dashed border-white/14 bg-background/58 p-4 text-xs text-muted-foreground/75 shadow-[0_35px_130px_-110px_rgba(15,23,42,0.4)]'>
+                      Optional: drop your squad so coaches can tag you into the right leaderboards.
+                    </div>
                   </div>
 
-                  <div className='space-y-3'>
-                    <p className='text-sm font-medium'>Account privacy</p>
-                    <RadioGroup value={privacy} onValueChange={(value) => setPrivacy(value as typeof privacy)} className='grid gap-3 sm:grid-cols-3'>
-                      {privacyOptions.map((option) => (
-                        <Label
-                          key={option.id}
+                  <div className='space-y-4 rounded-2xl border border-white/10 bg-background/62 p-6 shadow-[0_42px_140px_-120px_rgba(15,23,42,0.45)]'>
+                    <p className='text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>Account privacy</p>
+                    <RadioGroup value={privacy} onValueChange={(value) => setPrivacy(value as typeof privacy)} className='mt-3 grid gap-3 sm:grid-cols-3'>
+                      {privacyOptions.map((option) => {
+                        const selected = privacy === option.id
+                        return (
+                          <Label
+                            key={option.id}
                           className={cn(
-                            'flex cursor-pointer flex-col rounded-lg border bg-card/40 p-4 text-left transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
-                            privacy === option.id ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/40' : 'border-border hover:border-primary/60'
-                          )}
-                        >
-                          <RadioGroupItem value={option.id} className='sr-only' />
-                          <span className='font-semibold'>{option.label}</span>
-                          <span className='mt-1 text-xs text-muted-foreground'>{option.description}</span>
-                        </Label>
-                      ))}
+                            'group relative isolate flex cursor-pointer flex-col gap-2 overflow-hidden rounded-2xl border border-white/10 bg-background/60 p-4 text-left shadow-[0_32px_120px_-110px_rgba(15,23,42,0.45)] transition-all duration-300 hover:border-white/18 hover:shadow-[0_62px_170px_-130px_rgba(37,99,235,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                            selected && 'border-white/22 bg-gradient-to-br from-sport-blue/16 via-sport-green/10 to-transparent text-foreground shadow-[0_78px_180px_-140px_rgba(37,99,235,0.5)]'
+                            )}
+                          >
+                            <RadioGroupItem value={option.id} className='sr-only' />
+                            <span className='text-sm font-semibold'>{option.label}</span>
+                            <span className='text-xs text-muted-foreground/75'>{option.description}</span>
+                            {selected && (
+                              <span className='inline-flex items-center gap-1 text-xs font-semibold text-sport-blue'>
+                                <Check className='h-3 w-3' />
+                                Selected
+                              </span>
+                            )}
+                          </Label>
+                        )
+                      })}
                     </RadioGroup>
                   </div>
+
+                  <p className='text-xs text-muted-foreground/70'>These details only take a moment, and you can tweak everything later in Settings &gt; Profile.</p>
                 </CardContent>
               </Card>
             </TabsContent>
 
+
             <TabsContent value='goals'>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Training focus</CardTitle>
-                  <CardDescription>Select the areas you want to work on first. You can update these later.</CardDescription>
+              <Card className={cn(wizardShellClass)}>
+                <div className='pointer-events-none absolute inset-0 opacity-70'>
+                  <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--sport-orange)/0.22,transparent_60%)]' />
+                  <div className='absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,var(--sport-blue)/0.18,transparent_60%)]' />
+                </div>
+                <CardHeader className='relative z-10 space-y-4 px-10 pb-10'>
+                  <CardTitle className='text-2xl font-semibold sm:text-3xl'>Training focus</CardTitle>
+                  <CardDescription className='max-w-2xl text-base text-muted-foreground sm:text-lg'>
+                    Select the areas you want to work on first. You can remix them anytime.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className='space-y-6'>
+                <CardContent className='relative z-10 space-y-8 px-10 pb-12'>
                   <div className='space-y-6'>
                     {goalCatalog.sections.map((section) => (
-                      <div key={section.sportSlug} className='space-y-2'>
-                        <p className='text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70'>
-                          {section.sportName}
-                        </p>
+                      <div key={section.sportSlug} className='space-y-3'>
+                        <p className='text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground/70'>{section.sportName}</p>
                         <div className='grid gap-3 sm:grid-cols-2'>
                           {section.items.map((goal) => {
                             const checked = selectedGoals.includes(goal.id)
@@ -727,18 +897,19 @@ export default function OnboardingPage() {
                                 key={goal.id}
                                 htmlFor={checkboxId}
                                 className={cn(
-                                  'flex cursor-pointer items-start gap-3 rounded-lg border bg-card/40 p-4 text-left transition duration-200',
-                                  checked ? 'border-primary bg-primary/5 shadow-sm ring-1 ring-primary/30' : 'border-border hover:border-primary/60'
+                                  'group relative isolate flex cursor-pointer items-start gap-3 overflow-hidden rounded-2xl border border-white/10 bg-background/60 p-4 text-left shadow-[0_30px_120px_-115px_rgba(15,23,42,0.45)] transition-all duration-300 hover:border-white/18 hover:shadow-[0_60px_170px_-130px_rgba(37,99,235,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                                  checked && 'border-white/22 bg-gradient-to-br from-sport-orange/16 via-sport-blue/10 to-transparent text-foreground shadow-[0_75px_200px_-150px_rgba(37,99,235,0.5)]'
                                 )}
                               >
                                 <Checkbox
                                   id={checkboxId}
                                   checked={checked}
                                   onCheckedChange={() => toggleGoal(goal.id)}
+                                  className='mt-1 size-5 rounded-md border-white/25 bg-transparent data-[state=checked]:bg-sport-orange data-[state=checked]:text-white focus-visible:ring-white/30'
                                 />
-                                <span className='space-y-1'>
+                                <span className='relative z-10 space-y-1'>
                                   <span className='text-sm font-semibold'>{goal.label}</span>
-                                  {goal.description && <span className='text-xs text-muted-foreground'>{goal.description}</span>}
+                                  {goal.description && <span className='text-xs text-muted-foreground/75'>{goal.description}</span>}
                                 </span>
                               </Label>
                             )
@@ -748,66 +919,73 @@ export default function OnboardingPage() {
                     ))}
                   </div>
 
-                  <div className='rounded-lg border bg-muted/40 p-4 text-sm text-muted-foreground'>
-                    Tip: updating your goals keeps the streak tracker honest and makes new clip recommendations more accurate.
+                  <div className='rounded-2xl border border-dashed border-white/16 bg-background/58 p-5 text-sm text-muted-foreground/80 shadow-[0_45px_150px_-130px_rgba(15,23,42,0.45)]'>
+                    Tip: updating your goals keeps the streak tracker honest and makes new clip recommendations sharper.
                   </div>
 
-                  <div className='rounded-lg border border-dashed bg-card/30 p-4'>
-                    <div className='flex items-start gap-3'>
+                  <div className='rounded-2xl border border-white/10 bg-background/60 p-6 shadow-[0_50px_170px_-140px_rgba(15,23,42,0.45)]'>
+                    <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5'>
                       <Checkbox
                         id='safe-recording'
                         checked={hasAcceptedTerms}
                         onCheckedChange={(value) => setHasAcceptedTerms(value === true)}
+                        className='mt-1 size-5 rounded-md border-white/25 bg-transparent data-[state=checked]:bg-sport-blue data-[state=checked]:text-white focus-visible:ring-white/30'
                       />
-                      <div className='space-y-1 text-sm'>
-                        <Label htmlFor='safe-recording' className='cursor-pointer font-semibold'>
+                      <div className='space-y-2 text-sm'>
+                        <Label htmlFor='safe-recording' className='cursor-pointer text-base font-semibold tracking-tight text-foreground'>
                           Safe recording pledge
                         </Label>
-                        <p className='text-xs text-muted-foreground'>
-                          I will not film minors or teammates without explicit permission, and I’ll respect facility policies about recording.
+                        <p className='text-xs text-muted-foreground/75'>
+                          I will not film minors or teammates without explicit permission, and I&apos;ll respect facility policies about recording.
                         </p>
-                        <p className='text-xs text-muted-foreground'>
-                          I understand that breaking this trust can remove my access to posting clips.
-                        </p>
+                        <p className='text-xs text-muted-foreground/75'>I understand that breaking this trust can remove my access to posting clips.</p>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
+
           </Tabs>
 
-          <div className='flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <Button variant='outline' onClick={goPrevious} disabled={stepIndex === 0}>Back</Button>
+          <div className='relative mt-10 flex flex-col gap-4 rounded-2xl border border-white/10 bg-background/65 p-4 shadow-[0_55px_170px_-140px_rgba(15,23,42,0.45)] sm:flex-row sm:items-center sm:justify-between'>
+            <Button
+              variant='outline'
+              onClick={goPrevious}
+              disabled={stepIndex === 0}
+              className='w-full sm:w-auto border-white/18 bg-white/8 px-6 py-3 text-sm font-semibold text-muted-foreground transition hover:border-white/24 hover:bg-white/12 disabled:cursor-not-allowed disabled:border-white/10 disabled:text-muted-foreground/60'
+            >
+              Back
+            </Button>
 
-            <div className='flex-1 text-center text-xs text-muted-foreground sm:text-left'>
-              {currentStep === 'sports' && 'Choose at least one sport to continue.'}
-              {currentStep === 'profile' && 'Add your name, location, and gender so teammates can find you.'}
-              {currentStep === 'goals' && 'Pick at least one focus area and agree to the safe recording pledge.'}
+            <div className='flex-1 text-center text-xs text-muted-foreground/75 sm:px-6 sm:text-left'>
+              {currentStep === 'sports' && 'Choose at least one sport and a skill tier to continue.'}
+              {currentStep === 'profile' && 'Share your basics so invites, leaderboards, and squads know where to look.'}
+              {currentStep === 'goals' && 'Select at least one focus lane and accept the pledge to wrap onboarding.'}
             </div>
 
             {stepIndex === steps.length - 1 ? (
-              <Button onClick={handleFinish} disabled={isSaving || !canFinish}>
+              <Button
+                onClick={handleFinish}
+                disabled={isSaving || !canFinish}
+                className='w-full sm:w-auto rounded-full bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange px-8 py-3 text-sm font-semibold text-white shadow-[0_45px_140px_-110px_rgba(37,99,235,0.5)] transition hover:shadow-[0_60px_170px_-120px_rgba(37,99,235,0.6)] disabled:cursor-not-allowed disabled:opacity-60'
+              >
                 {isSaving ? 'Saving...' : 'Finish onboarding'}
               </Button>
             ) : (
-              <Button onClick={goNext} disabled={!canContinue()}>
+              <Button
+                onClick={goNext}
+                disabled={!canContinue()}
+                className='w-full sm:w-auto rounded-full bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange px-8 py-3 text-sm font-semibold text-white shadow-[0_45px_140px_-110px_rgba(37,99,235,0.5)] transition hover:shadow-[0_60px_170px_-120px_rgba(37,99,235,0.6)] disabled:cursor-not-allowed disabled:opacity-60'
+              >
                 Continue
               </Button>
             )}
           </div>
         </div>
       </div>
+    </div>
+  </div>
     </AuthGuard>
   )
 }
-
-
-
-
-
-
-
-
-
-
