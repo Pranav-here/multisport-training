@@ -70,3 +70,42 @@ export function createPlaceholderSession(): Session {
     user,
   }
 }
+
+export function activatePlaceholderAuth(): boolean {
+  if (!isPlaceholderAuthEnabled()) {
+    return false
+  }
+
+  if (typeof document === 'undefined') {
+    return false
+  }
+
+  const attributes = [
+    `${PLACEHOLDER_AUTH_COOKIE}=${PLACEHOLDER_AUTH_COOKIE_VALUE}`,
+    'path=/',
+    `max-age=${PLACEHOLDER_AUTH_MAX_AGE_SECONDS}`,
+    'SameSite=Lax',
+  ]
+
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    attributes.push('Secure')
+  }
+
+  document.cookie = attributes.join('; ')
+
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(PLACEHOLDER_AUTH_STORAGE_KEY, 'true')
+    } catch {
+      // ignore storage failures
+    }
+
+    try {
+      window.dispatchEvent(new Event(PLACEHOLDER_AUTH_EVENT))
+    } catch {
+      // ignore event dispatch failures
+    }
+  }
+
+  return true
+}
