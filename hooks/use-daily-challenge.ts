@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 
 import { useToast } from '@/hooks/use-toast'
-import { generateFallbackChallenge, type Challenge } from '@/lib/daily-challenge'
+import { generateFallbackChallenge } from '@/lib/daily-challenge'
+import type { Challenge } from '@/lib/mock-data'
 
 export const DAILY_CHALLENGE_STORAGE_KEY = 'athletiqs-current-challenge'
 
