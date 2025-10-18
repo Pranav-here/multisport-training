@@ -5,16 +5,16 @@ export const SUPPORTED_DIFFICULTIES = ['easy', 'medium', 'hard'] as const
 export type SupportedDifficulty = (typeof SUPPORTED_DIFFICULTIES)[number]
 
 export const fallbackSports: Array<{ slug: string; name: string }> = [
-  { slug: 'soccer', name: 'Soccer' },
   { slug: 'basketball', name: 'Basketball' },
-  { slug: 'tennis', name: 'Tennis' },
-  { slug: 'running', name: 'Running' },
-  { slug: 'cricket', name: 'Cricket' },
+  { slug: 'american-football', name: 'American Football' },
+  { slug: 'baseball', name: 'Baseball' },
 ]
 
 const sportThumbnails: Record<string, string> = {
   soccer: '/soccer-ball-control-challenge.png',
   basketball: '/basketball-player-jumping-for-dunk.png',
+  'american-football': '/sports-training-video.png',
+  baseball: '/sports-training-video.png',
   tennis: '/tennis-player-hitting-backhand-slice.png',
   running: '/daily-sports-challenge.png',
   cricket: '/sports-training-video.png',
@@ -88,6 +88,54 @@ const fallbackChallenges: Record<string, FallbackChallengeDefinition[]> = {
       ],
       difficulty: 'easy',
       points: 60,
+    },
+  ],
+  'american-football': [
+    {
+      title: 'Two-Minute Drill Precision',
+      description: 'Simulate a hurry-up offense with rapid reads, decisive throws, and tempo management.',
+      instructions: [
+        'Script a 40-yard drive with four passing concepts and run the sequence twice without huddles.',
+        'Use a stopwatch to cap each rep at 15 seconds from snap to whistle, focusing on footwork and timing.',
+        'Finish with three red-zone fades or option routes, tracking completion rate under fatigue.',
+      ],
+      difficulty: 'hard',
+      points: 95,
+    },
+    {
+      title: 'Linebacker Footwork Gauntlet',
+      description: 'Sharpen shuffle, scrape, and burst mechanics so you arrive square and balanced.',
+      instructions: [
+        'Set cones five yards apart; shuffle downhill, then open and sprint to a drop cone for six reps.',
+        'Add a read step with ball movement or coach cues, keeping hips low and shoulders square.',
+        'Close with 8 pursuit angles, tagging an imaginary runner while staying inside-out.',
+      ],
+      difficulty: 'medium',
+      points: 80,
+    },
+  ],
+  baseball: [
+    {
+      title: 'Gap-to-Gap Contact Challenge',
+      description: 'Drive the ball with intent by alternating oppo, middle, and pull-side targets each round.',
+      instructions: [
+        'Take 15 tee or soft-toss swings aiming five balls to each lane with matching exit direction.',
+        'Track hard-hit percentage or launch angle notes to spot when mechanics drift.',
+        'Finish with 10 situational cuts (hit-and-run, sac-fly depth, 2-strike battle) and log contact quality.',
+      ],
+      difficulty: 'medium',
+      points: 85,
+    },
+    {
+      title: 'Bullpen Command Intervals',
+      description: 'Stack consistent strike throwing by pairing fastball spots with breaking-ball shape.',
+      instructions: [
+        'Throw four sequences of FB glove-side, FB arm-side, breaking ball, changeup — focus on finish over velocity.',
+        'Log misses in a notebook and adjust cues (tempo, release height) before the next sequence.',
+        'Complete six pitch-outs or slide steps to rehearse run-game control under fatigue.',
+      ],
+      difficulty: 'medium',
+      points: 75,
     },
   ],
   tennis: [
@@ -303,4 +351,3 @@ export function generateFallbackChallenge(options: GenerateFallbackChallengeOpti
 
   return challenge
 }
-
