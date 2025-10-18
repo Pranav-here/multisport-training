@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import {
+  chooseFallbackChallenge,
+  computeDeadlineIso,
+  fallbackSports,
+  formatLocalDate,
+  normalizeDifficulty,
+  seededRandom,
+  selectThumbnail,
+} from '@/lib/daily-challenge'
 import { createServerClient } from '@/lib/supabase-server'
 
 const challengeSchema = z.object({
@@ -13,10 +22,6 @@ const challengeSchema = z.object({
   instructions: z.array(z.string().min(6)).min(2).max(6),
 })
 
-const SUPPORTED_DIFFICULTIES = ['easy', 'medium', 'hard'] as const
-
-type SupportedDifficulty = (typeof SUPPORTED_DIFFICULTIES)[number]
-
 type SupabaseSportRow = {
   sport_id: number
   sports: {
@@ -25,245 +30,7 @@ type SupabaseSportRow = {
   } | null
 }
 
-const fallbackSports = [
-  { slug: 'soccer', name: 'Soccer' },
-  { slug: 'basketball', name: 'Basketball' },
-  { slug: 'tennis', name: 'Tennis' },
-  { slug: 'running', name: 'Running' },
-  { slug: 'cricket', name: 'Cricket' },
-]
 
-const sportThumbnails: Record<string, string> = {
-  soccer: '/soccer-ball-control-challenge.png',
-  basketball: '/basketball-player-jumping-for-dunk.png',
-  tennis: '/tennis-player-hitting-backhand-slice.png',
-  running: '/daily-sports-challenge.png',
-  cricket: '/sports-training-video.png',
-  volleyball: '/volleyball-player-serving-ball.png',
-  strength: '/sports-training-video.png',
-}
-
-const fallbackChallenges: Record<
-  string,
-  Array<{
-    title: string
-    description: string
-    instructions: string[]
-    difficulty: SupportedDifficulty
-    points: number
-  }>
-> = {
-  soccer: [
-    {
-      title: 'One-Touch Triangle Rondo',
-      description: 'Build tempo and awareness by working quick one-touch passes in a tight 3-player triangle.',
-      instructions: [
-        'Set up three cones in a triangle about 8 yards apart and work one-touch passes clockwise for 90 seconds.',
-        'Switch direction and repeat, focusing on scanning the field before the pass.',
-        'Add a passive defender to increase pressure once rhythm is consistent.',
-      ],
-      difficulty: 'medium',
-      points: 70,
-    },
-    {
-      title: 'Crossbar Weak-Foot Challenge',
-      description: 'Strengthen your weaker foot by aiming for the crossbar from the edge of the box.',
-      instructions: [
-        'Take 10 attempts from the top of the box using only your weaker foot.',
-        'Reset quickly between reps to mimic game tempo and maintain balance over the plant foot.',
-        'Record how many times you strike the bar or come within a yard and try to beat the score tomorrow.',
-      ],
-      difficulty: 'hard',
-      points: 95,
-    },
-    {
-      title: 'Agility Gates & Finish',
-      description: 'Combine quick feet with a composed finish to simulate breaking through traffic and scoring.',
-      instructions: [
-        'Lay out four cones as mini gates 2 yards apart and sprint through them with quick lateral cuts.',
-        'Receive a pass (or roll a ball to yourself) and finish first-time on goal from 12 yards.',
-        'Complete 8 quality reps focusing on posture, plant steps, and clean striking contact.',
-      ],
-      difficulty: 'medium',
-      points: 80,
-    },
-  ],
-  basketball: [
-    {
-      title: 'Under Pressure Catch & Shoot',
-      description: 'Sharpen your shot release by simulating game-speed catches from multiple spots on the arc.',
-      instructions: [
-        'Place five markers around the three-point line and take two catch-and-shoot attempts from each.',
-        'Hold your follow-through and track your makes to set a personal benchmark.',
-        'Add a jab-step or rip-through before the shot on the second rotation for added difficulty.',
-      ],
-      difficulty: 'medium',
-      points: 75,
-    },
-    {
-      title: 'Two-Ball Rhythm Challenge',
-      description: 'Elevate ball control by alternating speed dribbles with both hands in tight windows.',
-      instructions: [
-        'Perform 30 seconds of synchronized low dribbles, then 30 seconds of alternating crossovers.',
-        'Stay in a strong stance with eyes up the entire time; repeat the set three times with 20 seconds rest.',
-        'Finish with 20 power dribbles on each hand to reinforce control under fatigue.',
-      ],
-      difficulty: 'easy',
-      points: 60,
-    },
-  ],
-  tennis: [
-    {
-      title: 'Serve Toss Consistency Test',
-      description:
-        'Dial in your serve toss rhythm to set up a reliable first serve under match conditions.',
-      instructions: [
-        'Stand at the baseline and perform 15 consecutive tosses, catching the ball at peak height without swinging.',
-        'Mark any toss that drifts more than a racquet length forward or backward and adjust immediately.',
-        'Finish with 10 full serves, aiming for 70% first-serve accuracy with the same toss placement.',
-      ],
-      difficulty: 'easy',
-      points: 55,
-    },
-    {
-      title: 'Baseline Depth Ladder',
-      description: 'Train depth control by landing rally balls in progressively smaller target zones.',
-      instructions: [
-        'Lay down two towels creating a landing zone 3 feet from the baseline.',
-        'Hit 20 forehands and 20 backhands aiming to land inside the zone with solid net clearance.',
-        'Shrink the zone by a foot and complete another 10 balls on each side, keeping rally tempo high.',
-      ],
-      difficulty: 'medium',
-      points: 85,
-    },
-  ],
-  running: [
-    {
-      title: 'Negative Split Tempo Run',
-      description: 'Build pacing mastery by finishing stronger than you start during a structured mid-distance run.',
-      instructions: [
-        'Run 2 km at an easy conversational pace to warm up the aerobic system.',
-        'Complete 3 km at tempo pace, ensuring the final kilometer is 10–15 seconds faster than the first.',
-        'Cool down with a 1 km jog and mobility routine focusing on calves and hip flexors.',
-      ],
-      difficulty: 'medium',
-      points: 90,
-    },
-    {
-      title: 'Hill Sprint Circuit',
-      description: 'Boost explosive power with short hill accelerations and walk-back recoveries.',
-      instructions: [
-        'Find a hill with a moderate incline and mark a 40-meter segment.',
-        'Complete 8 sprint reps up the hill at 90% effort with controlled walk-back recoveries.',
-        'Finish with 3 form-focused strides on flat ground emphasizing tall posture and quick turnover.',
-      ],
-      difficulty: 'hard',
-      points: 100,
-    },
-  ],
-  cricket: [
-    {
-      title: 'Target Bowling Accuracy Grid',
-      description: 'Refine line and length by hitting specific channels with repeatable mechanics.',
-      instructions: [
-        'Place three markers on a good length and bowl 12 deliveries, aiming to land on each target four times.',
-        'Record your misses and adjust grip pressure or run-up speed to tighten accuracy.',
-        'Finish with 6 yorkers to the base of off stump, keeping follow-through balanced.',
-      ],
-      difficulty: 'medium',
-      points: 85,
-    },
-    {
-      title: 'Power Hitting Interval',
-      description: 'Train controlled aggression by alternating boundary swings with gap placements.',
-      instructions: [
-        'Face 18 throw-downs or machine balls: rotate six power shots, six placement drives, six lofted flicks.',
-        'Track exit direction and make micro-adjustments to stance width to stay balanced.',
-        'Close with 10 quick singles sprinting hard through the crease to reinforce intensity.',
-      ],
-      difficulty: 'hard',
-      points: 95,
-    },
-  ],
-}
-
-function seededRandom(seed: string) {
-  let hash = 2166136261
-  for (let index = 0; index < seed.length; index += 1) {
-    hash ^= seed.charCodeAt(index)
-    hash = Math.imul(hash, 16777619)
-  }
-  return (hash >>> 0) / 4294967295
-}
-
-function chooseFallbackChallenge(sportSlug: string, seed: string) {
-  const catalog = fallbackChallenges[sportSlug]
-  if (!catalog || !catalog.length) {
-    return null
-  }
-  const randomIndex = Math.floor(seededRandom(`${seed}-${sportSlug}`) * catalog.length)
-  return catalog[randomIndex]
-}
-
-function normalizeDifficulty(input: string | undefined): SupportedDifficulty {
-  if (!input) {
-    return 'medium'
-  }
-  const normalized = input.trim().toLowerCase()
-  if (SUPPORTED_DIFFICULTIES.includes(normalized as SupportedDifficulty)) {
-    return normalized as SupportedDifficulty
-  }
-  return 'medium'
-}
-
-function selectThumbnail(sportSlug: string) {
-  const normalized = sportSlug.toLowerCase()
-  return sportThumbnails[normalized] ?? '/daily-sports-challenge.png'
-}
-
-function formatLocalDate(date: Date, timeZone: string) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date)
-}
-
-function getTimeZoneOffsetMs(date: Date, timeZone: string) {
-  const format = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    hour12: false,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
-
-  const parts = format.formatToParts(date)
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value])) as Record<string, string>
-
-  const asUTC = Date.UTC(
-    Number(values.year),
-    Number(values.month) - 1,
-    Number(values.day),
-    Number(values.hour),
-    Number(values.minute),
-    Number(values.second),
-  )
-
-  return asUTC - date.getTime()
-}
-
-function computeDeadlineIso(localDate: string, timeZone: string) {
-  const [year, month, day] = localDate.split('-').map((value) => Number(value))
-  const nextDayUtc = new Date(Date.UTC(year, month - 1, day + 1, 0, 0, 0))
-  const offset = getTimeZoneOffsetMs(nextDayUtc, timeZone)
-  const zonedMidnight = new Date(nextDayUtc.getTime() - offset)
-  return zonedMidnight.toISOString()
-}
 
 function extractJsonBlock(content: string) {
   if (!content) return null
@@ -378,18 +145,18 @@ export async function GET(request: Request) {
     console.warn('[daily-challenge] could not load user sports', sportsError)
   }
 
+  const sportsFromDb = ((sportsRows ?? []) as SupabaseSportRow[])
+    .filter(
+      (row): row is SupabaseSportRow & { sports: { slug: string; name: string } } => Boolean(row.sports),
+    )
+    .map((row) => ({
+      slug: row.sports.slug,
+      name: row.sports.name,
+      id: row.sport_id,
+    }))
+
   const sports: Array<{ slug: string; name: string; id?: number }> =
-    sportsRows?.map((row: SupabaseSportRow) => {
-      if (!row.sports) {
-        return null
-      }
-      return {
-        slug: row.sports.slug,
-        name: row.sports.name,
-        id: row.sport_id,
-      }
-    }).filter((value): value is { slug: string; name: string; id?: number } => Boolean(value)) ??
-    fallbackSports
+    sportsFromDb.length > 0 ? sportsFromDb : fallbackSports
 
   let localDate: string
   try {
@@ -469,3 +236,4 @@ export async function GET(request: Request) {
 
   return NextResponse.json({ challenge })
 }
+
