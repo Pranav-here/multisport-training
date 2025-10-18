@@ -1,26 +1,38 @@
 'use client'
 
-import { FormEvent, Suspense, useEffect, useMemo, useState } from 'react'
+import { FormEvent, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
+import {
+  PLACEHOLDER_AUTH_COOKIE,
+  PLACEHOLDER_AUTH_COOKIE_VALUE,
+  PLACEHOLDER_AUTH_EVENT,
+  PLACEHOLDER_AUTH_MAX_AGE_SECONDS,
+  PLACEHOLDER_AUTH_STORAGE_KEY,
+  isPlaceholderAuthEnabled,
+} from '@/lib/auth-placeholder'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
+import { BrandWordmark } from '@/components/brand-wordmark'
 
 function LoginPageContent() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [isOauthLoading, setIsOauthLoading] = useState(false)
   const [isMagicLoading, setIsMagicLoading] = useState(false)
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => getSupabaseBrowserClient(), [])
+  const placeholderAuthEnabled = useMemo(() => isPlaceholderAuthEnabled(), [])
   const redirectTarget = useMemo(() => {
     const requested = searchParams?.get('redirectedFrom')
     if (requested && requested.startsWith('/') && !requested.startsWith('//')) {
@@ -28,6 +40,44 @@ function LoginPageContent() {
     }
     return '/dashboard'
   }, [searchParams])
+  const activatePlaceholderSession = useCallback(
+    (target: string) => {
+      if (!placeholderAuthEnabled) {
+        return false
+      }
+
+      if (typeof document !== 'undefined') {
+        const cookieAttributes = [
+          `${PLACEHOLDER_AUTH_COOKIE}=${PLACEHOLDER_AUTH_COOKIE_VALUE}`,
+          'path=/',
+          `max-age=${PLACEHOLDER_AUTH_MAX_AGE_SECONDS}`,
+          'SameSite=Lax',
+        ]
+
+        if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+          cookieAttributes.push('Secure')
+        }
+
+        document.cookie = cookieAttributes.join('; ')
+
+        try {
+          window.localStorage.setItem(PLACEHOLDER_AUTH_STORAGE_KEY, 'true')
+        } catch {
+          // ignore storage write failures
+        }
+
+        try {
+          window.dispatchEvent(new Event(PLACEHOLDER_AUTH_EVENT))
+        } catch {
+          // ignore event dispatch failures
+        }
+      }
+
+      router.push(target)
+      return true
+    },
+    [placeholderAuthEnabled, router],
+  )
 
   useEffect(() => {
     if (searchParams?.get('error') === 'auth') {
@@ -39,7 +89,7 @@ function LoginPageContent() {
     }
   }, [searchParams, toast])
 
-  const buildCallbackUrl = (nextPath: string) => {
+  const buildCallbackUrl = useCallback((nextPath: string) => {
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
     if (!origin) {
       return undefined
@@ -47,25 +97,28 @@ function LoginPageContent() {
     const url = new URL('/api/auth/callback', origin)
     url.searchParams.set('next', nextPath)
     return url.toString()
-  }
+  }, [])
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = useCallback(async () => {
     setIsOauthLoading(true)
+
     try {
+      if (activatePlaceholderSession(redirectTarget)) {
+        return
+      }
+
       const redirectTo = buildCallbackUrl(redirectTarget)
       if (!redirectTo) {
         throw new Error('Unable to determine redirect target.')
       }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo },
       })
+
       if (error) {
-        toast({
-          title: 'Google sign-in failed',
-          description: error.message,
-          variant: 'destructive',
-        })
+        throw error
       }
     } catch (error) {
       toast({
@@ -76,11 +129,55 @@ function LoginPageContent() {
     } finally {
       setIsOauthLoading(false)
     }
-  }
+  }, [activatePlaceholderSession, buildCallbackUrl, redirectTarget, supabase, toast])
 
-  const handleMagicLink = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!email) {
+  const handlePasswordLogin = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      if (!email.trim() || !password.trim()) {
+        toast({
+          title: 'Missing credentials',
+          description: 'Enter your email and password to sign in.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      setIsPasswordLoading(true)
+
+      try {
+        if (activatePlaceholderSession(redirectTarget)) {
+          setPassword('')
+          return
+        }
+
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+
+        if (error) {
+          throw error
+        }
+
+        setPassword('')
+        router.push(redirectTarget)
+      } catch (error) {
+        toast({
+          title: 'Email sign-in failed',
+          description: error instanceof Error ? error.message : 'Please try again.',
+          variant: 'destructive',
+        })
+      } finally {
+        setIsPasswordLoading(false)
+      }
+    },
+    [activatePlaceholderSession, email, password, redirectTarget, router, supabase, toast]
+  )
+
+  const handleMagicLink = useCallback(async () => {
+    if (!email.trim()) {
       toast({
         title: 'Email required',
         description: 'Please enter your email address to receive a magic link.',
@@ -116,40 +213,70 @@ function LoginPageContent() {
     } finally {
       setIsMagicLoading(false)
     }
-  }
+  }, [buildCallbackUrl, email, redirectTarget, router, supabase, toast])
 
   return (
     <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/60 p-4">
       <span className="pointer-events-none absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl transition-all dark:bg-primary/10" aria-hidden="true" />
       <Card className="w-full max-w-md backdrop-blur-sm bg-card/95 shadow-2xl">
         <CardHeader className="text-center">
-          <Image
-            src="/athleIQ-icon-128.png"
-            alt="AthletIQ logo"
-            width={48}
-            height={48}
-            className="mx-auto mb-4 h-12 w-12 rounded-lg"
-            priority
-          />
+          <div className="mx-auto mb-4 flex flex-col items-center gap-2">
+            <Image
+              src="/logo-128.png"
+              alt="AthletIQs logo"
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-lg"
+              priority
+            />
+            <BrandWordmark className="text-3xl leading-none" />
+          </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to continue training with AthletIQ.</CardDescription>
+          <CardDescription>Sign in to continue training with AthletIQs.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleMagicLink} className="space-y-4">
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Email address"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                disabled={isMagicLoading || isOauthLoading}
+                disabled={isPasswordLoading || isMagicLoading || isOauthLoading}
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isMagicLoading || isOauthLoading}>
-              {isMagicLoading ? 'Sending magic link...' : 'Send magic link'}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={isPasswordLoading || isMagicLoading || isOauthLoading}
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isPasswordLoading || isMagicLoading || isOauthLoading}
+            >
+              {isPasswordLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                void handleMagicLink()
+              }}
+              disabled={isMagicLoading || isPasswordLoading || isOauthLoading}
+            >
+              {isMagicLoading ? 'Sending magic link...' : 'Send magic link instead'}
             </Button>
           </form>
 
@@ -167,7 +294,7 @@ function LoginPageContent() {
             variant="outline"
             className="w-full bg-transparent"
             onClick={handleGoogleLogin}
-            disabled={isOauthLoading || isMagicLoading}
+            disabled={isOauthLoading || isMagicLoading || isPasswordLoading}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path
