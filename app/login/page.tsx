@@ -6,14 +6,7 @@ import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
-import {
-  PLACEHOLDER_AUTH_COOKIE,
-  PLACEHOLDER_AUTH_COOKIE_VALUE,
-  PLACEHOLDER_AUTH_EVENT,
-  PLACEHOLDER_AUTH_MAX_AGE_SECONDS,
-  PLACEHOLDER_AUTH_STORAGE_KEY,
-  isPlaceholderAuthEnabled,
-} from '@/lib/auth-placeholder'
+import { activatePlaceholderAuth, isPlaceholderAuthEnabled } from '@/lib/auth-placeholder'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -46,31 +39,9 @@ function LoginPageContent() {
         return false
       }
 
-      if (typeof document !== 'undefined') {
-        const cookieAttributes = [
-          `${PLACEHOLDER_AUTH_COOKIE}=${PLACEHOLDER_AUTH_COOKIE_VALUE}`,
-          'path=/',
-          `max-age=${PLACEHOLDER_AUTH_MAX_AGE_SECONDS}`,
-          'SameSite=Lax',
-        ]
-
-        if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-          cookieAttributes.push('Secure')
-        }
-
-        document.cookie = cookieAttributes.join('; ')
-
-        try {
-          window.localStorage.setItem(PLACEHOLDER_AUTH_STORAGE_KEY, 'true')
-        } catch {
-          // ignore storage write failures
-        }
-
-        try {
-          window.dispatchEvent(new Event(PLACEHOLDER_AUTH_EVENT))
-        } catch {
-          // ignore event dispatch failures
-        }
+      const activated = activatePlaceholderAuth()
+      if (!activated) {
+        return false
       }
 
       router.push(target)
@@ -78,6 +49,12 @@ function LoginPageContent() {
     },
     [placeholderAuthEnabled, router],
   )
+
+  useEffect(() => {
+    if (activatePlaceholderSession(redirectTarget)) {
+      return
+    }
+  }, [activatePlaceholderSession, redirectTarget])
 
   useEffect(() => {
     if (searchParams?.get('error') === 'auth') {
