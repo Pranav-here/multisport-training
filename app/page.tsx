@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { BrandWordmark } from "@/components/brand-wordmark"
@@ -16,6 +16,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Target, Trophy, Users, Video, BarChart3, Shield, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react"
+import {
+  PLACEHOLDER_AUTH_COOKIE,
+  PLACEHOLDER_AUTH_COOKIE_VALUE,
+  PLACEHOLDER_AUTH_EVENT,
+  PLACEHOLDER_AUTH_MAX_AGE_SECONDS,
+  PLACEHOLDER_AUTH_STORAGE_KEY,
+  isPlaceholderAuthEnabled,
+} from "@/lib/auth-placeholder"
 
 const features = [
   {
@@ -255,6 +263,43 @@ export default function LandingPage() {
   const activeMatch = scoreboardMatches[scoreIndex] ?? scoreboardMatches[0]
   const activeFeature = selectedFeature !== null ? features[selectedFeature] : null
 
+  const placeholderAuthEnabled = useMemo(() => isPlaceholderAuthEnabled(), [])
+
+  const activatePlaceholderAccess = useCallback(() => {
+    if (!placeholderAuthEnabled) {
+      return
+    }
+
+    if (typeof document !== "undefined") {
+      const cookieAttributes = [
+        `${PLACEHOLDER_AUTH_COOKIE}=${PLACEHOLDER_AUTH_COOKIE_VALUE}`,
+        "path=/",
+        `max-age=${PLACEHOLDER_AUTH_MAX_AGE_SECONDS}`,
+        "SameSite=Lax",
+      ]
+
+      if (typeof window !== "undefined" && window.location.protocol === "https:") {
+        cookieAttributes.push("Secure")
+      }
+
+      document.cookie = cookieAttributes.join("; ")
+    }
+
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(PLACEHOLDER_AUTH_STORAGE_KEY, "true")
+      } catch {
+        // ignore storage write failures
+      }
+
+      try {
+        window.dispatchEvent(new Event(PLACEHOLDER_AUTH_EVENT))
+      } catch {
+        // ignore dispatch failures
+      }
+    }
+  }, [placeholderAuthEnabled])
+
   return (
     <>
       <div className="min-h-screen">
@@ -308,7 +353,7 @@ export default function LandingPage() {
             </nav>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/login">
+            <Link href="/onboarding" onClick={activatePlaceholderAccess}>
               <Button
                 variant="ghost"
                 className="transition-transform duration-150 hover:translate-y-[-1px] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -317,7 +362,7 @@ export default function LandingPage() {
                 Log in
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href="/onboarding" onClick={activatePlaceholderAccess}>
               <Button
                 className="transition-all duration-150 hover:translate-y-[-1px] hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                 aria-label="Get Started"
@@ -359,7 +404,7 @@ export default function LandingPage() {
                 <span>Personal messages launch soon; be among the first to try one-on-one DMs.</span>
               </div>
               <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:justify-start">
-                <Link href="/login">
+                <Link href="/onboarding" onClick={activatePlaceholderAccess}>
                   <Button
                     size="lg"
                     className="group relative overflow-hidden rounded-full text-lg px-8 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -372,7 +417,7 @@ export default function LandingPage() {
                     <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
                   </Button>
                 </Link>
-                <Link href="/login" className="rounded-full">
+                <Link href="/onboarding" onClick={activatePlaceholderAccess} className="rounded-full">
                   <Button
                     variant="ghost"
                     size="lg"
@@ -577,7 +622,7 @@ export default function LandingPage() {
                   <p className="text-xs text-muted-foreground sm:text-sm">
                     Ready to put it into practice? Jump into the app and start building momentum.
                   </p>
-                  <Link href="/login">
+                  <Link href="/onboarding" onClick={activatePlaceholderAccess}>
                     <Button
                       size="sm"
                       className="rounded-full px-4"
@@ -780,7 +825,7 @@ export default function LandingPage() {
               Join thousands of multi-sport athletes who are already using AthletIQs to reach their potential.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link href="/login">
+              <Link href="/onboarding" onClick={activatePlaceholderAccess}>
                 <Button
                   size="lg"
                   className="group relative overflow-hidden rounded-full text-lg px-10 py-6 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -793,7 +838,7 @@ export default function LandingPage() {
                   <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
                 </Button>
               </Link>
-              <Link href="/login">
+              <Link href="/onboarding" onClick={activatePlaceholderAccess}>
                 <Button
                   variant="ghost"
                   size="lg"
