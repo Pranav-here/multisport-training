@@ -20,6 +20,18 @@ const nextConfig = {
   images: {
     remotePatterns,
   },
+  webpack(config, { isServer }) {
+    if (isServer && config.output) {
+      const configuredName = config.output.chunkFilename ?? ''
+      if (!configuredName?.startsWith('chunks/')) {
+        const baseName = configuredName || '[name].js'
+        config.output.chunkFilename = baseName.startsWith('chunks/')
+          ? baseName
+          : `chunks/${baseName}`
+      }
+    }
+    return config
+  },
 }
 
 export default nextConfig
