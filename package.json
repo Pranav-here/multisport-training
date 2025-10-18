@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/ensure-next-manifest.mjs",
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
