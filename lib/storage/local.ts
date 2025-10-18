@@ -1,8 +1,20 @@
 import type { ClipApiResponse } from '@/lib/clips'
 
-const STORAGE_PREFIX = 'athletiq-training'
+const STORAGE_PREFIX = 'athletiqs-training'
 const DASHBOARD_CLIPS_KEY = `${STORAGE_PREFIX}:dashboard:clips`
+const DASHBOARD_QUICK_POSTS_KEY = `${STORAGE_PREFIX}:dashboard:quick-posts`
 const STORAGE_VERSION = 1
+const QUICK_POST_STORAGE_VERSION = 1
+const QUICK_POST_STORAGE_LIMIT = 20
+
+export interface StoredQuickPost {
+  id: string
+  content: string
+  createdAt: string
+  mood: string | null
+  tags: string[]
+  schemaVersion: number
+}
 
 export type StoredClip = ClipApiResponse & {
   schemaVersion: number
@@ -92,4 +104,40 @@ export function storedClipToClip(storedClip: StoredClip): ClipApiResponse {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { schemaVersion: _schemaVersion, ...clip } = storedClip
   return clip
+}
+
+export function loadStoredQuickPosts(): StoredQuickPost[] {
+  const stored = readFromStorage<unknown>(DASHBOARD_QUICK_POSTS_KEY, [])
+  if (!Array.isArray(stored)) {
+    return []
+  }
+
+  return stored.filter((item): item is StoredQuickPost => {
+    if (!item || typeof item !== "object") {
+      return false
+    }
+    const candidate = item as Partial<StoredQuickPost>
+    return candidate.schemaVersion === QUICK_POST_STORAGE_VERSION && typeof candidate.content === "string"
+  })
+}
+
+export function saveStoredQuickPosts(posts: StoredQuickPost[]): void {
+  writeToStorage(
+    DASHBOARD_QUICK_POSTS_KEY,
+    posts.map((post) => ({
+      ...post,
+      schemaVersion: QUICK_POST_STORAGE_VERSION,
+    })),
+  )
+}
+
+export function addStoredQuickPost(post: Omit<StoredQuickPost, "schemaVersion">): StoredQuickPost[] {
+  const entry: StoredQuickPost = {
+    ...post,
+    schemaVersion: QUICK_POST_STORAGE_VERSION,
+  }
+  const existing = loadStoredQuickPosts().filter((item) => item.id !== entry.id)
+  const updated = [entry, ...existing].slice(0, QUICK_POST_STORAGE_LIMIT)
+  saveStoredQuickPosts(updated)
+  return updated
 }
