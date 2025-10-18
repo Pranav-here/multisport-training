@@ -281,7 +281,7 @@ export default function ChallengeArenaPage() {
                   </CardHeader>
                   <CardContent>
                     <ol className='space-y-3 text-sm text-muted-foreground'>
-                      {activeChallenge.instructions.map((instruction, index) => (
+                      {activeChallenge.instructions.map((instruction: string, index: number) => (
                         <li key={`${instruction}-${index}`} className='flex items-start gap-3'>
                           <CheckCircle2 className='mt-0.5 h-4 w-4 text-sport-green' />
                           <span>
