@@ -33,7 +33,7 @@ type SportOption = {
 }
 
 const DEFAULT_SPORT_OPTIONS: SportOption[] = [
-  { slug: 'athletiq', name: 'AthletIQ' },
+  { slug: 'athletiqs', name: 'AthletIQs' },
   { slug: 'basketball', name: 'Basketball' },
   { slug: 'soccer', name: 'Soccer' },
   { slug: 'tennis', name: 'Tennis' },
