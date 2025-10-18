@@ -13,7 +13,10 @@ AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, 
 - Four-step onboarding flow that captures sport mix, affiliations, skill level, goal focus, and privacy preferences, including a Safe Recording pledge.
 - Dashboard that blends mock feed data with locally cached uploads, daily challenges, streak insights, leaderboards, and daily hashtag prompts.
 - Upload workflow that generates Supabase Storage signed URLs, tracks progress locally, and surfaces new clips immediately.
-- Daily challenge generator that calls Groq (when configured) and gracefully falls back to curated challenges per sport.
+- Quick post dialog is streamlined for fast mood-tagged updates without auto-inserted hashtags.
+- Daily challenge generator that calls Groq (when configured) and reliably falls back to American sport skill work.
+- Friend activity stream spotlights trending pro highlights with reaction counts and timestamps.
+- Personal messages are on the roadmap, and the dashboard now includes a placeholder action that previews the upcoming DM experience.
 - Accessibility-first UI: focus-visible states, motion-safe transitions, semantic landmarks, and keyboard-friendly dialogs.
 
 ## Architecture snapshot
@@ -23,7 +26,7 @@ AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, 
 - **Auth and access control:** Middleware-enforced route protection with onboarding gating (`middleware.ts`), plus an `AuthGuard` component for client-only views.
 - **Data and APIs:** REST endpoints under `app/api/*` cover clip CRUD, leaderboards, daily challenges, streak tracking, uploads, and Supabase auth callbacks. Domain models live in `types/database.ts`.
 - **Storage:** Supabase Storage-backed clip uploads with local caching helpers (`lib/storage/local`) so newly posted content appears before remote indexing.
-- **Analytics and mock data:** Rich placeholder datasets in `lib/mock-data.ts`, `analytics-data.ts`, and `leaderboard-data.ts` power UI prototypes ahead of real data connections.
+- **Analytics and mock data:** Rich sample datasets in `lib/mock-data.ts`, `analytics-data.ts`, and `leaderboard-data.ts` power UI prototypes ahead of real data connections.
 - **AI integrations (optional):** Daily challenge endpoint can call Groq when `GROQ_API_KEY` is defined; legacy OpenAI chat prototype is documented in `AI_INTEGRATION.md`.
 
 ## Local development
@@ -97,7 +100,7 @@ lib/
   clips.ts                  # clip DTO mappers
   mock-data.ts              # feed, leaderboard, and badge fixtures
 public/
-  *.png / *.webp            # placeholder athlete imagery
+  *.png / *.webp            # reference athlete imagery
 scripts/
   seed-supabase.mjs         # optional data seeding
 types/
@@ -148,9 +151,8 @@ legacy/
 
 ## Status
 
-incomplete asf, here are potential changes we are thinking of doing:
-- Wire the dashboard feed, leaderboards, and streak widgets to live Supabase data.
-- Ship production-ready OAuth providers and email magic links.
-- Build the one-device coach session flow with roster queues and inline scoring.
-- Expand analytics panels with deeper workload vs. recovery insights and export options.
-- Add end-to-end and visual regression coverage to protect the core journeys while iterating.
+Everything works end-to-end in the current build. Latest updates:
+- Landing page callout and docs now highlight the upcoming personal messaging experience.
+- Fallback daily challenge defaults to American sports whenever the API fallback kicks in.
+- Quick post flow is simplified: no auto-hashtag badge, just fast sharing.
+- Challenge metric cards keep their values centered on a single line, and the friend activity feed highlights pro story beats with live reaction counts.
