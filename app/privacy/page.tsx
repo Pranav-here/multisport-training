@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Bell, Database, Eye, FileText, History, Lock, ShieldCheck, ShieldLock, Timer } from "lucide-react"
+import { Bell, Database, Eye, FileText, History, Lock, Shield, ShieldCheck, Timer } from "lucide-react"
 import Link from "next/link"
 
 const heroStats = [
@@ -46,7 +46,7 @@ const controls = [
   },
   {
     title: "Guardian oversight tools",
-    icon: ShieldLock,
+    icon: Shield,
     items: [
       "Approve connections, content, and notifications for youth athletes.",
       "Enable mandatory review before uploads appear on athlete profiles.",
