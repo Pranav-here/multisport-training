@@ -5,6 +5,7 @@ import { createServerClient as createSupabaseServerClient, type CookieOptions } 
 import {
   PLACEHOLDER_AUTH_COOKIE,
   PLACEHOLDER_AUTH_COOKIE_VALUE,
+  PLACEHOLDER_AUTH_MAX_AGE_SECONDS,
   isPlaceholderAuthEnabled,
 } from '@/lib/auth-placeholder'
 
@@ -18,8 +19,21 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
   const { pathname } = request.nextUrl
   const placeholderAuthEnabled = isPlaceholderAuthEnabled()
-  const placeholderSessionActive =
+  const isApiRoute = pathname.startsWith('/api')
+  let placeholderSessionActive =
     placeholderAuthEnabled && request.cookies.get(PLACEHOLDER_AUTH_COOKIE)?.value === PLACEHOLDER_AUTH_COOKIE_VALUE
+
+  if (placeholderAuthEnabled && !placeholderSessionActive && !isApiRoute) {
+    response.cookies.set({
+      name: PLACEHOLDER_AUTH_COOKIE,
+      value: PLACEHOLDER_AUTH_COOKIE_VALUE,
+      path: '/',
+      maxAge: PLACEHOLDER_AUTH_MAX_AGE_SECONDS,
+      sameSite: 'lax',
+      secure: request.nextUrl.protocol === 'https:',
+    })
+    placeholderSessionActive = true
+  }
 
   if (placeholderSessionActive) {
     if (pathname === '/login') {
@@ -68,7 +82,6 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession()
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
-  const isApiRoute = pathname.startsWith('/api')
   const isOnboardingRoute = pathname.startsWith('/onboarding')
 
   if (isApiRoute) {
