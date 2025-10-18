@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 
 import { logout as logoutAction } from '@/app/(routes)/actions'
 import { NotificationsList } from '@/components/notifications'
+import { BrandWordmark } from '@/components/brand-wordmark'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +17,11 @@ import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { famousPeople } from '@/lib/search-suggestions'
 import { useTheme } from 'next-themes'
+import {
+  PLACEHOLDER_AUTH_COOKIE,
+  PLACEHOLDER_AUTH_EVENT,
+  PLACEHOLDER_AUTH_STORAGE_KEY,
+} from '@/lib/auth-placeholder'
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -62,6 +68,35 @@ export function Header() {
   }, [])
 
   const handleLogout = () => {
+    if (typeof document !== 'undefined') {
+      const cookieAttributes = [
+        `${PLACEHOLDER_AUTH_COOKIE}=`,
+        'path=/',
+        'max-age=0',
+        'SameSite=Lax',
+      ]
+
+      if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+        cookieAttributes.push('Secure')
+      }
+
+      document.cookie = cookieAttributes.join('; ')
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(PLACEHOLDER_AUTH_STORAGE_KEY)
+      } catch {
+        // ignore storage cleanup failures
+      }
+
+      try {
+        window.dispatchEvent(new Event(PLACEHOLDER_AUTH_EVENT))
+      } catch {
+        // ignore dispatch errors
+      }
+    }
+
     startTransition(() => {
       logoutAction().catch(() => {
         toast({
@@ -98,22 +133,22 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center space-x-2">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/85 shadow-sm backdrop-blur-lg supports-[backdrop-filter]:bg-background/70">
+      <div className="mx-auto flex h-16 w-full max-w-[1320px] items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link href="/dashboard" className="flex flex-shrink-0 items-start gap-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
           <Image
-            src="/athleIQ-icon-64.png"
-            alt="AthletIQ logo"
-            width={32}
-            height={32}
+            src="/logo-128.png"
+            alt="AthletIQs logo"
+            width={28}
+            height={28}
             priority
-            className="h-8 w-8 rounded-lg transition-transform duration-200 hover:scale-105"
+            className="h-7 w-7 rounded-lg transition-transform duration-200 hover:scale-[1.03]"
           />
-          <span className="font-bold text-xl">AthletIQ</span>
+          <BrandWordmark className="text-[1.65rem] leading-none" />
         </Link>
 
-        <div className="hidden md:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full">
+        <div className="hidden flex-1 justify-center md:flex">
+          <div className="relative w-full max-w-lg">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               ref={searchInputRef}
@@ -164,30 +199,29 @@ export function Header() {
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Search className="h-5 w-5" />
-          </Button>
+        <div className="flex flex-shrink-0 items-center gap-1.5 sm:gap-2.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative transition-transform duration-150 hover:scale-[1.03]">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-sport-orange text-xs" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <NotificationsList />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/settings#notifications">Notification settings</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <div className="relative">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72">
-                <NotificationsList />
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/settings#notifications">Notification settings</Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="relative transition-transform duration-150 hover:scale-[1.03]"
+          >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
@@ -195,7 +229,7 @@ export function Header() {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full transition-transform duration-150 hover:scale-[1.03]">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={user.avatarUrl ?? '/placeholder.svg'} alt={user.displayName} />
                     <AvatarFallback>
