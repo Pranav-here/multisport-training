@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState } from 'react'
 import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
@@ -162,29 +162,47 @@ interface ChallengeStatsProps {
 function ChallengeStats({ points, participants, countdownLabel, isExpired }: ChallengeStatsProps) {
   return (
     <div className="grid gap-4 sm:gap-5 md:grid-cols-3">
-      <StatPill label="Points" icon={Trophy}>
-        <span className="text-2xl font-semibold text-sport-blue">+{points}</span>
-      </StatPill>
-      <StatPill label="Athletes in" icon={Users}>
-        <span className="text-2xl font-semibold text-sport-green">{participants.toLocaleString()}</span>
-      </StatPill>
-      <StatPill label={isExpired ? 'Status' : 'Time left'} icon={Clock}>
-        <span className={cn('text-2xl font-semibold', isExpired ? 'text-muted-foreground' : 'text-sport-orange')}>
-          {isExpired ? 'Closed' : countdownLabel}
-        </span>
-      </StatPill>
+      <StatPill label="Points" icon={Trophy} value={`+${points}`} valueClassName="text-sport-blue" />
+      <StatPill
+        label="Athletes in"
+        icon={Users}
+        value={participants.toLocaleString()}
+        valueClassName="text-sport-green"
+      />
+      <StatPill
+        label={isExpired ? 'Status' : 'Time left'}
+        icon={Clock}
+        value={isExpired ? 'Closed' : countdownLabel}
+        valueClassName={isExpired ? 'text-muted-foreground' : 'text-sport-orange'}
+      />
     </div>
   )
 }
 
-function StatPill({ label, icon: Icon, children }: { label: string; icon: typeof Trophy; children: ReactNode }) {
+interface StatPillProps {
+  label: string
+  icon: typeof Trophy
+  value: string
+  valueClassName?: string
+}
+
+function StatPill({ label, icon: Icon, value, valueClassName }: StatPillProps) {
   return (
     <div className="flex min-w-0 flex-col justify-between rounded-2xl border border-border/60 bg-muted/20 p-5 sm:p-6">
       <div className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
         <Icon className="h-4 w-4" />
         {label}
       </div>
-      <div className="mt-3 text-foreground break-words">{children}</div>
+      <div className="mt-3 flex items-center justify-center">
+        <span
+          className={cn(
+            'text-2xl font-semibold leading-none tracking-tight text-balance-none text-foreground whitespace-nowrap tabular-nums',
+            valueClassName,
+          )}
+        >
+          {value}
+        </span>
+      </div>
     </div>
   )
 }
