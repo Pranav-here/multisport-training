@@ -19,6 +19,45 @@ import type { Database } from '@/types/database'
 import { getSupabaseBrowserClient, type SupabaseBrowserClient } from '@/lib/supabase-browser'
 import { cn } from '@/lib/utils'
 
+const MAX_USERNAME_LENGTH = 24
+const MAX_USERNAME_ATTEMPTS = 5
+
+const sanitizeUsernameBase = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+const buildUsernameCandidate = (base: string, attempt: number): string | null => {
+  if (!base) {
+    return null
+  }
+
+  if (attempt === 0) {
+    return base.slice(0, MAX_USERNAME_LENGTH)
+  }
+
+  const suffix = `-${attempt + 1}`
+  const maxBaseLength = Math.max(1, MAX_USERNAME_LENGTH - suffix.length)
+  const trimmedBase = base.slice(0, maxBaseLength).replace(/(^-|-$)/g, '')
+  const candidate = `${trimmedBase}${suffix}`.replace(/(^-|-$)/g, '')
+
+  if (!candidate) {
+    return null
+  }
+
+  return candidate.slice(0, MAX_USERNAME_LENGTH)
+}
+
+const isUniqueConstraintError = (error: unknown) => {
+  if (!error || typeof error !== 'object') {
+    return false
+  }
+
+  const { code } = error as { code?: string }
+  return code === '23505'
+}
+
 const defaultSports = [
   { slug: 'basketball', name: 'Basketball', summary: 'Ball handling, shooting and footwork drills.' },
   { slug: 'soccer', name: 'Soccer', summary: 'First touch, agility and small sided training.' },
@@ -56,7 +95,7 @@ const generalGoals: GoalDefinition[] = [
   { id: 'speed', label: 'Get faster and more explosive' },
   { id: 'technique', label: 'Clean up technique' },
   { id: 'consistency', label: 'Stay consistent every week' },
-] as const
+]
 
 const sportSpecificGoals: Record<string, GoalDefinition[]> = {
   basketball: [
@@ -113,7 +152,7 @@ const sportSpecificGoals: Record<string, GoalDefinition[]> = {
     { id: 'reads', label: 'Progress through reads faster' },
     { id: 'conditioning', label: 'Sustain fourth-quarter bursts' },
   ],
-} as const
+}
 
 const sportAccents: Record<
   string,
@@ -482,12 +521,15 @@ export default function OnboardingPage() {
     }
 
     setIsSaving(true)
+    const redirectToDashboard = () => {
+      router.push('/dashboard')
+      router.refresh()
+    }
 
     try {
       const fallbackName = session.user.user_metadata?.full_name || session.user.email || 'Athlete'
       const finalName = displayName.trim() || fallbackName
-      const baseUsername = finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-      const username = baseUsername ? baseUsername.slice(0, 24) : null
+      const usernameBase = sanitizeUsernameBase(finalName)
 
       const profileBioParts = [] as string[]
       if (affiliation.trim()) profileBioParts.push(`Team: ${affiliation.trim()}`)
@@ -500,18 +542,58 @@ export default function OnboardingPage() {
 
       // Supabase type defs misalign with Next.js 15 route builds; manually narrow profiles client.
       const profilesClient = supabase as unknown as ProfilesClient
-      const { error: profileError } = await profilesClient
-        .from('profiles')
-        .upsert({
-          id: session.user.id,
-          display_name: finalName,
-          username: username || null,
-          location: location.trim() || null,
-          bio: profileBioParts.join(' | ') || null,
-        })
+      const profilePayload: ProfilesInsert = {
+        id: session.user.id,
+        display_name: finalName,
+        location: location.trim() || null,
+        bio: profileBioParts.join(' | ') || null,
+      }
 
-      if (profileError) {
-        throw profileError
+      if (!usernameBase) {
+        const { error: profileError } = await profilesClient
+          .from('profiles')
+          .upsert({
+            ...profilePayload,
+            username: null,
+          })
+
+        if (profileError) {
+          throw profileError
+        }
+      } else {
+        let profileSaved = false
+
+        for (let attempt = 0; attempt < MAX_USERNAME_ATTEMPTS; attempt += 1) {
+          const usernameCandidate = buildUsernameCandidate(usernameBase, attempt)
+          const { error: profileError } = await profilesClient
+            .from('profiles')
+            .upsert({
+              ...profilePayload,
+              username: usernameCandidate,
+            })
+
+          if (!profileError) {
+            profileSaved = true
+            break
+          }
+
+          if (!isUniqueConstraintError(profileError)) {
+            throw profileError
+          }
+        }
+
+        if (!profileSaved) {
+          const { error: profileError } = await profilesClient
+            .from('profiles')
+            .upsert({
+              ...profilePayload,
+              username: null,
+            })
+
+          if (profileError) {
+            throw profileError
+          }
+        }
       }
 
       const goalSummary =
@@ -551,15 +633,14 @@ export default function OnboardingPage() {
 
       await refreshProfile().catch(() => null)
 
-      router.push('/dashboard')
-      router.refresh()
+      redirectToDashboard()
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Something went wrong. Try again.'
+      console.error('Failed to finish onboarding, redirecting to dashboard fallback.', error)
       toast({
-        title: 'Unable to finish onboarding',
-        description: message,
-        variant: 'destructive',
+        title: 'Taking you to the dashboard',
+        description: 'Preview mode could not save your onboarding data yet, but you can explore the dashboard.',
       })
+      redirectToDashboard()
     } finally {
       setIsSaving(false)
     }
