@@ -17,7 +17,8 @@ import { useCountdown } from '@/hooks/use-countdown'
 import { useToast } from '@/hooks/use-toast'
 import type { Challenge } from '@/lib/mock-data'
 
-const COMPLETION_STORAGE_KEY = 'athletiq-challenge-completions'
+const COMPLETION_STORAGE_KEY = 'athletiqs-challenge-completions'
+const COMPLETION_EVENT = 'athletiqs-challenge-completions-updated'
 
 interface CompletionRecord {
   date: string
@@ -72,6 +73,7 @@ function saveCompletionRecords(records: CompletionRecord[]) {
   }
   const trimmed = records.slice(0, 90)
   window.localStorage.setItem(COMPLETION_STORAGE_KEY, JSON.stringify(trimmed))
+  window.dispatchEvent(new Event(COMPLETION_EVENT))
 }
 
 function computeStreak(records: CompletionRecord[]) {
@@ -98,8 +100,8 @@ function computeStreak(records: CompletionRecord[]) {
 export default function ChallengeArenaPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { session } = useAuth()
-  const { challenge, loading } = useDailyChallenge(session)
+  const { session, isPlaceholder } = useAuth()
+  const { challenge, loading } = useDailyChallenge(session, { isPlaceholderSession: isPlaceholder })
   const countdown = useCountdown(challenge?.deadline)
   const [proofNote, setProofNote] = useState('')
   const [records, setRecords] = useState<CompletionRecord[]>(() => loadCompletionRecords())
@@ -157,6 +159,7 @@ export default function ChallengeArenaPage() {
     setRecords([])
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem(COMPLETION_STORAGE_KEY)
+      window.dispatchEvent(new Event(COMPLETION_EVENT))
     }
     toast({
       title: 'Progress reset',
