@@ -1,6 +1,6 @@
-# AthletIQ
+# AthletIQs
 
-AthletIQ is a multi-sport training platform built with Next.js 15, TypeScript, Tailwind CSS, and Supabase. The app helps athletes and coaches plan sessions, capture short-form video progress, and track streaks across multiple sports from a single dashboard.
+AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, Tailwind CSS, and Supabase. The app helps athletes and coaches plan sessions, capture short-form video progress, and track streaks across multiple sports from a single dashboard.
 
 ## Live preview
 
