@@ -4,44 +4,45 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --background: oklch(0.98 0.018 228);
+  --foreground: oklch(0.238 0.032 230);
+  --card: oklch(0.992 0.01 240);
+  --card-foreground: oklch(0.255 0.028 230);
+  --popover: oklch(0.995 0.012 236);
+  --popover-foreground: oklch(0.245 0.028 226);
+  --primary: oklch(0.56 0.223 255);
+  --primary-foreground: oklch(0.985 0.02 225);
+  --secondary: oklch(0.944 0.048 210);
+  --secondary-foreground: oklch(0.308 0.044 212);
+  --muted: oklch(0.93 0.02 240);
+  --muted-foreground: oklch(0.524 0.024 238);
+  --accent: oklch(0.952 0.052 120);
+  --accent-foreground: oklch(0.3 0.05 122);
+  --destructive: oklch(0.63 0.218 27);
+  --destructive-foreground: oklch(0.982 0.008 25);
+  --border: oklch(0.872 0.014 228);
+  --input: oklch(0.872 0.014 228);
+  --ring: oklch(0.65 0.21 255);
+  --chart-1: oklch(0.54 0.24 255);
+  --chart-2: oklch(0.64 0.18 205);
+  --chart-3: oklch(0.72 0.2 155);
+  --chart-4: oklch(0.78 0.2 60);
+  --chart-5: oklch(0.58 0.21 312);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.976 0.034 222);
+  --sidebar-foreground: oklch(0.24 0.032 232);
+  --sidebar-primary: oklch(0.558 0.224 255);
+  --sidebar-primary-foreground: oklch(0.985 0.02 225);
+  --sidebar-accent: oklch(0.948 0.05 128);
+  --sidebar-accent-foreground: oklch(0.312 0.046 130);
+  --sidebar-border: oklch(0.866 0.016 228);
+  --sidebar-ring: oklch(0.65 0.21 255);
 
-/* Added sport accent colors for AthletIQ branding */
-  --sport-blue: oklch(0.6 0.2 240);
-  --sport-green: oklch(0.65 0.18 140);
-  --sport-orange: oklch(0.7 0.15 50);
+/* Added sport accent colors for AthletIQs branding */
+  --sport-blue: oklch(0.632 0.24 245);
+  --sport-green: oklch(0.688 0.19 150);
+  --sport-orange: oklch(0.722 0.19 60);
+  --brand-iq: #2563eb;
 }
 
 .dark {
@@ -82,10 +83,12 @@
   --sport-blue: oklch(0.65 0.2 240);
   --sport-green: oklch(0.7 0.18 140);
   --sport-orange: oklch(0.75 0.15 50);
+  --brand-iq: #2563eb;
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-barlow-condensed);
   --font-mono: var(--font-geist-mono);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -136,6 +139,114 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: var(--background);
+    background-image:
+      radial-gradient(120% 120% at 12% 12%, color-mix(in oklab, var(--sport-blue) 28%, transparent) 0%, transparent 68%),
+      radial-gradient(160% 140% at 88% 4%, color-mix(in oklab, var(--sport-orange) 22%, transparent) 0%, transparent 72%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+}
+
+.dark body {
+  background-image: none;
+  background-attachment: initial;
+}
+
+@layer components {
+  .brand-wordmark {
+    font-family: var(--font-display), var(--font-inter), system-ui, sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.045em;
+    text-transform: uppercase;
+    color: currentColor;
+    font-kerning: normal;
+    text-shadow: 0 0.04em 0.18em rgba(0, 0, 0, 0.4);
+  }
+
+  .brand-wordmark .brand-base {
+    color: #ffffff;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 0.015em;
+  }
+
+  .brand-wordmark .brand-base span {
+    display: inline-block;
+  }
+
+  .brand-wordmark .brand-base .brand-at {
+    letter-spacing: 0.005em;
+    margin-right: -0.01em;
+  }
+
+  .brand-wordmark .brand-base .brand-h {
+    margin-left: -0.02em;
+    margin-right: -0.015em;
+  }
+
+  .brand-wordmark .brand-base .brand-let {
+    letter-spacing: 0.005em;
+  }
+
+  .brand-wordmark .brand-iq {
+    position: relative;
+    display: inline-flex;
+    align-items: flex-end;
+    color: var(--brand-iq);
+    letter-spacing: -0.005em;
+    margin-left: -0.01em;
+  }
+
+  .brand-wordmark .brand-iq .brand-i,
+  .brand-wordmark .brand-iq .brand-q {
+    display: inline-block;
+    position: relative;
+  }
+
+  .brand-wordmark .brand-iq .brand-i {
+    margin-right: -0.018em;
+  }
+
+  .brand-wordmark .brand-iq .brand-q {
+    padding-right: 0.02em;
+  }
+
+  .brand-wordmark .brand-iq .brand-q-notch {
+    position: absolute;
+    width: 0.24em;
+    height: 0.12em;
+    bottom: 0.06em;
+    right: -0.02em;
+    border-radius: 0.12em 0 0 0.12em;
+    background: var(--color-background);
+    box-shadow: 0 0 0 0.018em var(--brand-iq);
+    transform: rotate(10deg);
+    opacity: 0.85;
+  }
+
+  .brand-wordmark .brand-iq .brand-q-tail {
+    position: absolute;
+    bottom: -0.14em;
+    left: -0.02em;
+    width: 0.92em;
+    height: 0.28em;
+    background: var(--brand-iq);
+    clip-path: polygon(0% 75%, 15% 48%, 42% 34%, 78% 40%, 100% 60%, 85% 78%, 50% 90%, 18% 100%);
+    filter: drop-shadow(0 0.015em 0.05em color-mix(in srgb, var(--brand-iq) 60%, transparent));
+    opacity: 0.9;
+    transform-origin: left bottom;
+    transform: rotate(-7deg);
+  }
+
+  .brand-wordmark .brand-s {
+    color: #ffffff;
+    margin-left: 0.035em;
+    letter-spacing: 0;
   }
 }
 
