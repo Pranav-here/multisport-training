@@ -4,9 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 
 import { useToast } from '@/hooks/use-toast'
-import { mockChallenge, type Challenge } from '@/lib/mock-data'
+import { generateFallbackChallenge, type Challenge } from '@/lib/daily-challenge'
 
-export const DAILY_CHALLENGE_STORAGE_KEY = 'athletiq-current-challenge'
+export const DAILY_CHALLENGE_STORAGE_KEY = 'athletiqs-current-challenge'
+
+interface UseDailyChallengeOptions {
+  isPlaceholderSession?: boolean
+  preferredSports?: Array<{ slug: string; name: string }>
+}
 
 function isChallengeExpired(challenge: Challenge | null): boolean {
   if (!challenge?.deadline) {
@@ -17,33 +22,6 @@ function isChallengeExpired(challenge: Challenge | null): boolean {
     return true
   }
   return Date.now() >= deadlineTs
-}
-
-function computeLocalMidnightDeadline(): string {
-  const now = new Date()
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0)
-  return midnight.toISOString()
-}
-
-function buildWarmStartChallenge(): Challenge {
-  const now = new Date()
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC'
-  const challengeDate = new Intl.DateTimeFormat('en-CA', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    timeZone,
-  }).format(now)
-
-  return {
-    ...mockChallenge,
-    id: `local-fallback-${challengeDate}`,
-    instructions: [...mockChallenge.instructions],
-    generatedAt: now.toISOString(),
-    challengeDate,
-    timeZone,
-    deadline: computeLocalMidnightDeadline(),
-  }
 }
 
 function isLocalFallback(challenge: Challenge | null): boolean {
@@ -82,15 +60,40 @@ function loadCachedChallenge() {
   }
 }
 
-export function useDailyChallenge(session: Session | null) {
+export function useDailyChallenge(session: Session | null, options: UseDailyChallengeOptions = {}) {
+  const { isPlaceholderSession = false, preferredSports } = options
   const { toast } = useToast()
   const [challenge, setChallenge] = useState<Challenge | null>(() => loadCachedChallenge())
   const [loading, setLoading] = useState(false)
-  const hasFetchedRef = useRef<boolean>(Boolean(challenge) && !isChallengeExpired(challenge) && !isLocalFallback(challenge))
+  const hasFetchedRef = useRef<boolean>(
+    Boolean(challenge) && !isChallengeExpired(challenge) && !isLocalFallback(challenge),
+  )
   const warmStartRef = useRef<Challenge | null>(null)
+  const userId = session?.user?.id ?? null
+
+  const buildFallbackChallenge = useCallback(() => {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC'
+    return generateFallbackChallenge({
+      userId: userId ?? 'local-user',
+      sports: preferredSports,
+      timeZone,
+      idPrefix: 'local-fallback',
+    })
+  }, [preferredSports, userId])
+
+  const acquireFallbackChallenge = useCallback(() => {
+    const fallback = warmStartRef.current ?? buildFallbackChallenge()
+    warmStartRef.current = fallback
+    return fallback
+  }, [buildFallbackChallenge])
 
   const refresh = useCallback(async () => {
-    if (!session) {
+    if (!session || isPlaceholderSession) {
+      const fallbackChallenge = acquireFallbackChallenge()
+      setChallenge(fallbackChallenge)
+      storeChallenge(fallbackChallenge)
+      hasFetchedRef.current = true
+      setLoading(false)
       return
     }
 
@@ -98,7 +101,7 @@ export function useDailyChallenge(session: Session | null) {
     setLoading(true)
 
     const controller = new AbortController()
-    let timeoutId: ReturnType<typeof window.setTimeout> | undefined
+    let timeoutId: number | undefined
 
     try {
       timeoutId = window.setTimeout(() => controller.abort(), 5000)
@@ -113,29 +116,31 @@ export function useDailyChallenge(session: Session | null) {
       }
 
       const payload = (await response.json()) as { challenge: Challenge }
+      warmStartRef.current = null
+      hasFetchedRef.current = true
       setChallenge(payload.challenge)
       storeChallenge(payload.challenge)
-      warmStartRef.current = null
     } catch (error) {
       console.error('[daily-challenge] failed to load challenge', error)
 
-      const fallbackChallenge = warmStartRef.current ?? buildWarmStartChallenge()
-      warmStartRef.current = fallbackChallenge
-
+      const fallbackChallenge = acquireFallbackChallenge()
+      hasFetchedRef.current = true
       setChallenge(fallbackChallenge)
       storeChallenge(fallbackChallenge)
 
-      toast({
-        title: 'Using fallback challenge',
-        description: "Could not refresh today's challenge. Showing a backup option.",
-      })
+      if (!isPlaceholderSession) {
+        toast({
+          title: 'Using fallback challenge',
+          description: "Could not refresh today's challenge. Showing a backup option.",
+        })
+      }
     } finally {
       if (timeoutId !== undefined) {
         window.clearTimeout(timeoutId)
       }
       setLoading(false)
     }
-  }, [session, toast])
+  }, [acquireFallbackChallenge, isPlaceholderSession, session, toast])
 
   useEffect(() => {
     if (!session) {
@@ -146,20 +151,17 @@ export function useDailyChallenge(session: Session | null) {
       return
     }
 
-    const expired = !challenge || isChallengeExpired(challenge) || isLocalFallback(challenge)
-
-    if (!challenge) {
-      if (!warmStartRef.current) {
-        warmStartRef.current = buildWarmStartChallenge()
-      }
-      setChallenge(warmStartRef.current)
+    if (!challenge || isChallengeExpired(challenge)) {
+      const fallbackChallenge = acquireFallbackChallenge()
+      setChallenge(fallbackChallenge)
+      storeChallenge(fallbackChallenge)
     }
 
     if (!hasFetchedRef.current && !loading) {
       hasFetchedRef.current = true
       void refresh()
     }
-  }, [challenge, loading, refresh, session])
+  }, [acquireFallbackChallenge, challenge, loading, refresh, session])
 
   useEffect(() => {
     if (!challenge?.deadline) {
@@ -175,16 +177,18 @@ export function useDailyChallenge(session: Session | null) {
 
     if (delayMs <= 0) {
       hasFetchedRef.current = false
+      warmStartRef.current = null
       void refresh()
       return
     }
 
-    const timeoutId = setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       hasFetchedRef.current = false
+      warmStartRef.current = null
       void refresh()
     }, delayMs)
 
-    return () => clearTimeout(timeoutId)
+    return () => window.clearTimeout(timeoutId)
   }, [challenge?.deadline, refresh])
 
   const value = useMemo(
