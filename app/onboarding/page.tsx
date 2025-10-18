@@ -647,7 +647,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <AuthGuard>
+    <AuthGuard requireAuth={false}>
       <div className='relative min-h-screen overflow-hidden bg-background'>
         <span className='pointer-events-none absolute -top-24 -left-24 hidden h-[420px] w-[420px] rounded-full bg-gradient-to-br from-sport-blue/20 via-sport-green/10 to-transparent blur-[140px] sm:block' />
         <span className='pointer-events-none absolute bottom-[-28%] right-[-18%] h-[480px] w-[480px] rounded-full bg-gradient-to-br from-sport-orange/18 via-sport-blue/10 to-transparent blur-[150px]' />
