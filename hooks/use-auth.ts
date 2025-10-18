@@ -8,6 +8,7 @@ import {
   PLACEHOLDER_AUTH_COOKIE_VALUE,
   PLACEHOLDER_AUTH_EVENT,
   PLACEHOLDER_AUTH_STORAGE_KEY,
+  activatePlaceholderAuth,
   createPlaceholderSession,
   getPlaceholderUser,
   isPlaceholderAuthEnabled,
@@ -70,7 +71,18 @@ export function useAuth() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), [])
   const placeholderAuthEnabled = useMemo(() => isPlaceholderAuthEnabled(), [])
   const [state, setState] = useState<AuthState>(() => {
-    const placeholderActive = detectPlaceholderSession(placeholderAuthEnabled)
+    const placeholderActive = (() => {
+      if (!placeholderAuthEnabled) {
+        return detectPlaceholderSession(false)
+      }
+
+      const detected = detectPlaceholderSession(true)
+      if (detected) {
+        return true
+      }
+
+      return activatePlaceholderAuth()
+    })()
 
     return {
       session: placeholderActive ? createPlaceholderSession() : null,
@@ -106,7 +118,11 @@ export function useAuth() {
   }, [supabase])
 
   const syncSession = useCallback(async () => {
-    const placeholderActive = detectPlaceholderSession(placeholderAuthEnabled)
+    let placeholderActive = detectPlaceholderSession(placeholderAuthEnabled)
+
+    if (placeholderAuthEnabled && !placeholderActive) {
+      placeholderActive = activatePlaceholderAuth()
+    }
 
     if (placeholderActive) {
       setState((prev) => ({
