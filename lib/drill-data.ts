@@ -299,7 +299,7 @@ export const mockProgressData: ProgressData = {
   ],
   badges: [
     { id: "1", name: "First Touch Master", icon: "⚽", earnedDate: "2 days ago" },
-    { id: "2", name: "Week Warrior", icon: "🔥", earnedDate: "Today" },
+    { id: "2", name: "Streak Warrior", icon: "🔥", earnedDate: "Today" },
     { id: "3", name: "Accuracy Ace", icon: "🎯", earnedDate: "1 week ago" },
   ],
 }
