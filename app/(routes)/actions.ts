@@ -14,7 +14,9 @@ export async function logout() {
     console.warn('[logout] Supabase sign-out skipped', error)
   }
 
-  cookies().set({
+  const cookieStore = await cookies()
+
+  cookieStore.set({
     name: PLACEHOLDER_AUTH_COOKIE,
     value: '',
     maxAge: 0,
