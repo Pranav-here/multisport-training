@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
       const target =
         redirectedFrom && redirectedFrom.startsWith('/') && !redirectedFrom.startsWith('//')
           ? redirectedFrom
-          : '/onboarding'
+          : '/dashboard'
 
       return NextResponse.redirect(new URL(target, request.url))
     }
