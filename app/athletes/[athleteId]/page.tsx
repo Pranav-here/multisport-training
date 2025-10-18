@@ -13,9 +13,15 @@ import { getAthleteProfile } from '@/lib/athlete-profiles'
 import { ArrowLeft, Award, Play, Target } from 'lucide-react'
 
 export default function AthleteProfilePage() {
-  const params = useParams()
+  const params = useParams<{ athleteId?: string | string[] }>()
   const router = useRouter()
-  const athleteId = typeof params.athleteId === 'string' ? params.athleteId : Array.isArray(params.athleteId) ? params.athleteId[0] : ''
+  const athleteIdParam = params?.athleteId
+  const athleteId =
+    typeof athleteIdParam === 'string'
+      ? athleteIdParam
+      : Array.isArray(athleteIdParam)
+        ? athleteIdParam[0]
+        : ''
   const profile = athleteId ? getAthleteProfile(athleteId) : undefined
 
   return (
