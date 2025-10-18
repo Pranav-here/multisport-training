@@ -99,14 +99,15 @@ export function QuickPostDialog({
       return
     }
 
-    const contentWithSpace = content.trim().length > 0 ? `${content.trim()} ${suggestedHashtag}` : suggestedHashtag
-    if (contentWithSpace.length > characterLimit) {
+    const trimmed = content.trim()
+    const nextValue = trimmed.length > 0 ? `${trimmed} ${suggestedHashtag}` : suggestedHashtag
+    if (nextValue.length > characterLimit) {
       setHelperTone("error")
       setHelperMessage("Adding the hashtag would exceed your 200 character limit.")
       return
     }
 
-    setContent(contentWithSpace)
+    setContent(nextValue)
     setHelperTone("info")
     setHelperMessage(`${suggestedHashtag} added to your post.`)
   }
@@ -202,9 +203,9 @@ export function QuickPostDialog({
             <Progress value={progressValue} className="h-1.5 rounded-full bg-muted/60" />
           </div>
 
-          {suggestedHashtag && (
+          {suggestedHashtag ? (
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-muted-foreground/20 bg-muted/10 px-3 py-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Trending</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Trending</span>
               <Badge
                 variant="secondary"
                 className="cursor-pointer rounded-full border border-sport-blue/40 bg-sport-blue/15 px-3 py-1 text-xs font-semibold text-sport-blue hover:bg-sport-blue/25"
@@ -214,7 +215,7 @@ export function QuickPostDialog({
                 {suggestedHashtag}
               </Badge>
             </div>
-          )}
+          ) : null}
 
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Set the tone</Label>
