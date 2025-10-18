@@ -138,7 +138,7 @@ export default function GuidelinesPage() {
             <div>
               <h4 className="font-semibold text-blue-900">How to Report Issues</h4>
               <p className="text-sm text-blue-700">
-                Use the flag button on any content or contact us directly at safety@athletiq.app. All reports are
+                Use the flag button on any content or contact us directly at safety@athletiqs.app. All reports are
                 reviewed within 24 hours.
               </p>
             </div>
@@ -203,11 +203,11 @@ export default function GuidelinesPage() {
         <CardContent className="p-6 text-center">
           <h2 className="text-xl font-bold mb-2">Questions or Concerns?</h2>
           <p className="text-muted-foreground mb-4">
-            Our community team is here to help ensure AthletIQ remains a safe and positive space for everyone.
+            Our community team is here to help ensure AthletIQs remains a safe and positive space for everyone.
           </p>
           <div className="flex justify-center space-x-4">
-            <Badge variant="outline">safety@athletiq.app</Badge>
-            <Badge variant="outline">support@athletiq.app</Badge>
+            <Badge variant="outline">safety@athletiqs.app</Badge>
+            <Badge variant="outline">support@athletiqs.app</Badge>
           </div>
         </CardContent>
       </Card>
