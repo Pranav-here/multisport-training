@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Target, Trophy, Users, Video, BarChart3, Shield, ChevronLeft, ChevronRight } from "lucide-react"
+import { Target, Trophy, Users, Video, BarChart3, Shield, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react"
 
 const features = [
   {
@@ -90,6 +90,18 @@ const features = [
       "Personalised recovery recommendations and prehab playlists",
     ],
   },
+  {
+    icon: MessageCircle,
+    title: "Personal Messages (Coming Soon)",
+    description: "Direct messaging will let you coordinate sessions and share feedback without leaving AthletIQs.",
+    details:
+      "We're putting the finishing touches on private threads so athletes, coaches, and parents can sync plans, react to clips, and keep sensitive updates in one secure place. Join now to be first in line.",
+    highlights: [
+      "1:1 and small group threads with delivery receipts",
+      "Attach clips, challenges, and session plans directly inside a message",
+      "Coach nudges and reminders arrive as gentle DM notifications",
+    ],
+  },
 ]
 
 const testimonials = [
@@ -135,7 +147,7 @@ const steps = [
   {
     number: "04",
     title: "Compete & Connect",
-    description: "Join local leaderboards and connect with athletes from your school or club.",
+    description: "Join local leaderboards, connect with athletes from your school or club, and get ready for upcoming private messaging.",
   },
   {
     number: "05",
@@ -186,8 +198,8 @@ const scoreboardMatches = [
     stage: "Chase Center",
     status: "Q4 | 02:14",
     highlight: "Celtics drop 23 threes on the road",
-    home: { name: "Golden State Warriors", score: 80, color: "from-sport-blue to-sport-green" },
-    away: { name: "Boston Celtics", score: 140, color: "from-sport-orange to-sport-blue" },
+    home: { name: "Golden State Warriors", score: 80, color: "from-[#FDB927] to-[#006BB6]" },
+    away: { name: "Boston Celtics", score: 140, color: "from-[#007A33] to-[#BA9653]" },
     metrics: [
       { label: "Top Scorer", value: "J. Brown - 38 PTS" },
       { label: "Run", value: "BOS 24-2 burst" },
@@ -198,8 +210,8 @@ const scoreboardMatches = [
     stage: "Rajiv Gandhi Stadium",
     status: "1st Inn | 19.4",
     highlight: "SRH rewrite the record books",
-    home: { name: "Sunrisers Hyderabad", score: "287/3", color: "from-sport-orange to-sport-green" },
-    away: { name: "Royal Challengers Bengaluru", score: "229/8", color: "from-sport-blue to-sport-orange" },
+    home: { name: "Sunrisers Hyderabad", score: "287/3", color: "from-[#F26D21] to-[#000000]" },
+    away: { name: "Royal Challengers Bengaluru", score: "229/8", color: "from-[#D71920] to-[#FED700]" },
     metrics: [
       { label: "Strike Rate", value: "215 vs 164" },
       { label: "Sixes", value: "SRH 21 | RCB 14" },
@@ -210,8 +222,8 @@ const scoreboardMatches = [
     stage: "AFC Divisional",
     status: "Q3 | 03:52",
     highlight: "Bills defense forcing turnovers",
-    home: { name: "Buffalo Bills", score: 45, color: "from-sport-blue to-sport-green" },
-    away: { name: "Kansas City Chiefs", score: 17, color: "from-sport-orange to-sport-blue" },
+    home: { name: "Buffalo Bills", score: 45, color: "from-[#00338D] to-[#C60C30]" },
+    away: { name: "Kansas City Chiefs", score: 17, color: "from-[#E31837] to-[#FFB81C]" },
     metrics: [
       { label: "TDs", value: "J. Allen 4 total" },
       { label: "Takeaways", value: "BUF +3 margin" },
@@ -329,12 +341,12 @@ export default function LandingPage() {
         <div className="relative container px-4 py-24">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="mx-auto max-w-3xl text-center md:text-left lg:mx-0">
-              <h1 className="mt-6 text-4xl md:text-6xl font-bold leading-tight tracking-tight text-balance">
+              <h1 className="mt-6 text-4xl md:text-6xl font-bold leading-[1.18] md:leading-[1.12] tracking-tight text-balance">
                 Train smarter across{" "}
                 <span className="bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange bg-clip-text text-transparent">
                   every sport
                 </span>
-                <span className="mt-4 block text-3xl md:text-4xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-sport-orange via-sport-green to-sport-blue">
+                <span className="mt-4 block text-3xl md:text-4xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-sport-orange via-sport-green to-sport-blue leading-tight md:leading-snug pb-1">
                   {heroSecondaryText}
                 </span>
               </h1>
@@ -342,6 +354,10 @@ export default function LandingPage() {
                 The all-in-one platform for multi-sport athletes to track progress, compete with friends, and train with
                 purpose across all your favorite sports.
               </p>
+              <div className="mt-6 inline-flex items-center justify-center gap-3 rounded-full border border-sport-blue/40 bg-sport-blue/10 px-5 py-2 text-sm text-sport-blue md:justify-start">
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                <span>Personal messages launch soon; be among the first to try one-on-one DMs.</span>
+              </div>
               <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:justify-start">
                 <Link href="/login">
                   <Button
