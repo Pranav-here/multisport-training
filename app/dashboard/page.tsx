@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { Plus, Hash, Upload, Users, Calendar, ChevronRight, Trophy, Activity } from 'lucide-react'
+import { Plus, Hash, Upload, Users, Calendar, ChevronRight, Trophy, Activity, MessageCircle } from 'lucide-react'
 
 import { Header } from '@/components/header'
 import { MobileNav } from '@/components/mobile-nav'
@@ -492,6 +492,13 @@ export default function DashboardPage() {
     [toast],
   )
 
+  const handleDirectMessagePlaceholder = useCallback(() => {
+    toast({
+      title: 'Personal messages are on deck',
+      description: 'Soon you\'ll be able to send 1:1 updates, share clips, and coordinate sessions privately.',
+    })
+  }, [toast])
+
   useEffect(() => {
     if (isMobile) {
       setShowAllMobilePosts(false)
@@ -555,34 +562,30 @@ export default function DashboardPage() {
     () => [
       {
         id: 'activity-1',
-        name: 'Jada Cole',
-        action: 'dropped a new recovery highlight',
-        detail: 'Mobility circuit - 24 reactions',
-        timeAgo: '5m ago',
+        name: 'LeBron',
+        action: 'dropped 42 at 42 and smiled, saying "still got it."',
+        detail: 'Postgame clip, 1.8k reactions • 7m ago',
         avatar: null,
       },
       {
         id: 'activity-2',
-        name: 'Liam Ortiz',
-        action: 'set a personal best in sprint drills',
-        detail: '200m repeats - 6 comments',
-        timeAgo: '18m ago',
+        name: 'Travis Kelce',
+        action: 'just got engaged, losing to the Eagles is no longer the saddest thing in my life.',
+        detail: 'Highlights, 2.4k reactions • 5m ago',
         avatar: null,
       },
       {
         id: 'activity-3',
-        name: 'Maya Chen',
-        action: 'joined the core strength challenge',
-        detail: 'Day 3 complete - +45 pts',
-        timeAgo: '32m ago',
+        name: 'Max Verstappen',
+        action: 'says "If my mum had balls, she would be my dad."',
+        detail: 'Paddock mic drop, 3.3k reactions • 12m ago',
         avatar: null,
       },
       {
         id: 'activity-4',
-        name: 'Noah Patel',
-        action: 'shared a film breakdown clip',
-        detail: 'Varsity scrimmage - 14 saves',
-        timeAgo: '1h ago',
+        name: 'Virat Kohli',
+        action: 'says he retired because he hated coloring his beard every 3-4 weeks. What a dingus.',
+        detail: 'Press conference clip, 2.1k reactions • 20m ago',
         avatar: null,
       },
     ],
@@ -645,6 +648,15 @@ export default function DashboardPage() {
                   >
                     <Users className="h-4 w-4 text-sport-green" />
                     Create team session
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full rounded-full border-sport-blue/40 text-foreground hover:border-sport-blue/60 hover:bg-sport-blue/10"
+                    onClick={handleDirectMessagePlaceholder}
+                  >
+                    <MessageCircle className="h-4 w-4 text-sport-blue" />
+                    Personal messages (coming soon)
                   </Button>
                   <button
                     type="button"
@@ -724,7 +736,6 @@ export default function DashboardPage() {
                           </p>
                           <p className="truncate text-xs text-muted-foreground">{activity.detail}</p>
                         </div>
-                        <span className="text-xs text-muted-foreground">{activity.timeAgo}</span>
                       </div>
                     )
                   })}
@@ -811,13 +822,10 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   <Badge variant="outline" className="rounded-full border-sport-blue/30 px-3 py-1 text-xs text-sport-blue">
-                    Share a clip
+                    Highlight a moment
                   </Badge>
                   <Badge variant="outline" className="rounded-full border-sport-green/30 px-3 py-1 text-xs text-sport-green">
-                    Tag a teammate
-                  </Badge>
-                  <Badge variant="outline" className="rounded-full border-sport-orange/30 px-3 py-1 text-xs text-sport-orange">
-                    Daily mindset
+                    Appreciate a teammate
                   </Badge>
                 </CardContent>
               </Card>
