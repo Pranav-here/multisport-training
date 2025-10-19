@@ -4,7 +4,7 @@ AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, 
 
 ## Live preview
 
-- Demo: [https://v0-multi-sport-app-build.vercel.app/](https://athletiqs.vercel.app/)
+- Demo: [https://athletiqs.vercel.app/]https://athletiqs.vercel.app/)
 
 ## Current experience
 
