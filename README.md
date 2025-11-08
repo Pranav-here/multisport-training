@@ -1,158 +1,115 @@
-# AthletIQs
+# Learn Soccer – Gamified Skill Journey
 
-AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, Tailwind CSS, and Supabase. The app helps athletes and coaches plan sessions, capture short-form video progress, and track streaks across multiple sports from a single dashboard.
+A playful learning loop for footballers that mixes Candy Crush map progression with Duolingo’s streaks, hearts, and booster economy. Everything runs client-side today with mock APIs and local storage persistence so you can iterate on flows before wiring a backend.
 
-## Live preview
+## Highlights
 
-- Demo: [https://v0-multi-sport-app-build.vercel.app/](https://athletiqs.vercel.app/)
+- **World Map (`/play`)** – Six themed worlds with 20 levels each, gates at 20/40/60/80/100, keyboard panning, and accessible level buttons (`aria-label="Level 12, 2 stars, tap to start"`). Sticky HUD shows hearts, streak, XP, coins, and daily quests.
+- **Session Engine (`/session/[id]`)** – Three-card rounds pull from skill tags, track quiz answers + self-reported effort, calculate score ➜ stars, XP, coins, and streak updates. Animated celebration on finish.
+- **Practice Loop** – SM-2 inspired scheduler prioritises weakest skills and feeds the “Practice” button. Practice halves rewards, never consumes hearts, and protects streaks.
+- **Economy + Shop (`/shop`)** – Earn stars/XP/coins, open gates, and buy boosters (Star Doubler, Gate Key, Streak Freeze, Extra Heart). Inventory syncs via local storage before falling back to `/api/progress` mock route.
+- **League (`/league`)** – 30-player mock ladder seeded with flavour data, weekly resets, and promotion rewards.
 
-## Current experience
-
-- Landing page with hero, feature grid, testimonial carousel, and a "How it works" journey.
-- Authenticated surfaces protected by Supabase session-aware middleware (onboarding, dashboard, profile settings, guidelines, about).
-- Four-step onboarding flow that captures sport mix, affiliations, skill level, goal focus, and privacy preferences, including a Safe Recording pledge.
-- Dashboard that blends mock feed data with locally cached uploads, daily challenges, streak insights, leaderboards, and daily hashtag prompts.
-- Upload workflow that generates Supabase Storage signed URLs, tracks progress locally, and surfaces new clips immediately.
-- Quick post dialog is streamlined for fast mood-tagged updates without auto-inserted hashtags.
-- Daily challenge generator that calls Groq (when configured) and reliably falls back to American sport skill work.
-- Friend activity stream spotlights trending pro highlights with reaction counts and timestamps.
-- Personal messages are on the roadmap, and the dashboard now includes a placeholder action that previews the upcoming DM experience.
-- Accessibility-first UI: focus-visible states, motion-safe transitions, semantic landmarks, and keyboard-friendly dialogs.
-
-## Architecture snapshot
-
-- **Frontend:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS (sport accent tokens), shadcn/ui primitives, lucide-react icon set.
-- **State and hooks:** Custom hooks for Supabase auth (`useAuth`), toast notifications, challenge caching, and countdown timers.
-- **Auth and access control:** Middleware-enforced route protection with onboarding gating (`middleware.ts`), plus an `AuthGuard` component for client-only views.
-- **Data and APIs:** REST endpoints under `app/api/*` cover clip CRUD, leaderboards, daily challenges, streak tracking, uploads, and Supabase auth callbacks. Domain models live in `types/database.ts`.
-- **Storage:** Supabase Storage-backed clip uploads with local caching helpers (`lib/storage/local`) so newly posted content appears before remote indexing.
-- **Analytics and mock data:** Rich sample datasets in `lib/mock-data.ts`, `analytics-data.ts`, and `leaderboard-data.ts` power UI prototypes ahead of real data connections.
-- **AI integrations (optional):** Daily challenge endpoint can call Groq when `GROQ_API_KEY` is defined; legacy OpenAI chat prototype is documented in `AI_INTEGRATION.md`.
-
-## Local development
-
-### Requirements
-
-- Node.js 18+
-- pnpm 10+ (use Corepack to pin versions)
-- Supabase project (required for full auth/upload flows)
-
-### Install
+## Quick Start
 
 ```bash
-corepack enable
-corepack prepare pnpm@10 --activate
-pnpm install
+pnpm install       # install dependencies
+pnpm dev           # run Next.js dev server on http://localhost:3000
+pnpm test          # run vitest unit suite
+pnpm build && pnpm start  # production build preview
 ```
 
-Create `.env.local` in the repository root:
+> The mock database lives entirely in memory (`lib/game/mock-db.ts`). No Supabase or external services are required to explore the new flows.
 
-```
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-SITE_URL=http://localhost:3000
-RESEND_API_KEY=optional-resend-api-key
-OPENAI_API_KEY=optional-openai-key
-GROQ_API_KEY=optional-groq-key
-```
-
-> Keep the service role key server-side only. Use Vercel or your hosting provider's secret manager in production.
-
-### Run
-
-```bash
-pnpm dev          # start Next.js dev server on http://localhost:3000
-pnpm lint         # run ESLint
-pnpm build        # create a production build
-pnpm start        # serve the production build
-```
-
-### Supabase bootstrap
-
-1. In Supabase, run the SQL schema (see `schema.sql`) to create required tables and policies.
-2. Configure the auth site URL and redirect URLs to `http://localhost:3000` for local development.
-3. Optionally run `node scripts/seed-supabase.mjs` to seed sports, drills, and leaderboard rows.
-4. Sign in through `/login`, complete onboarding, and confirm `profiles`, `user_sports`, and related tables populate.
-
-## Project layout
+## Project Map
 
 ```
 app/
-  page.tsx                  # marketing landing page
-  login/                    # Supabase auth bridge
-  onboarding/               # multi-step onboarding wizard
-  dashboard/                # authenticated athlete experience
-  challenge-arena/          # challenge discovery prototype
-  api/                      # REST endpoints (clips, challenges, streaks, uploads, auth)
-components/
-  header.tsx                # shared shell
-  upload-clip-dialog.tsx    # Supabase storage upload flow
-  daily-challenge-card.tsx  # challenge display module
-  ui/                       # shadcn/ui primitives
-hooks/
-  use-auth.ts               # Supabase session sync
-  use-daily-challenge.ts    # cached challenge fetch with Groq fallback
-lib/
-  supabase-server.ts        # server client + admin helpers
-  supabase-browser.ts       # browser client
-  clips.ts                  # clip DTO mappers
-  mock-data.ts              # feed, leaderboard, and badge fixtures
-public/
-  *.png / *.webp            # reference athlete imagery
-scripts/
-  seed-supabase.mjs         # optional data seeding
-types/
-  database.ts               # generated Supabase typings
-legacy/
-  api/ / components/        # archived AI chat prototype
+  play/page.tsx            # primary map hub + session preview drawer
+  session/[id]/page.tsx    # session HUD, rounds, result celebration
+  league/page.tsx          # weekly leaderboard mock
+  shop/page.tsx            # booster storefront
+  api/
+    seed/route.ts          # generates level data (120 nodes)
+    progress/route.ts      # GET/POST mock persistence
+components/game/
+  Hud.tsx, Hearts.tsx, XPBar.tsx, StreakFlame.tsx
+  PathCanvas.tsx, LevelNode.tsx, GateNode.tsx
+  SessionPreview.tsx, RoundCard.tsx, ResultCelebration.tsx
+  LeagueTable.tsx, ShopGrid.tsx, BoosterPill.tsx
+lib/game/
+  types.ts                 # Skill, Level, Progress, SessionResult, constants
+  seed.ts                  # 6 worlds, gates, neighbours, friendly titles
+  progress.ts              # initial state, hydration, date helpers
+  scheduler.ts             # SM-2 inspired spaced repetition helpers
+  session.ts               # round generation + reward model
+  store.ts                 # Zustand store (progress, boosters, gate logic)
+  quests.ts                # rotating daily quest metadata
+  mock-db.ts               # in-memory persistence for route handlers
+public/media/              # lightweight SVG illustrations per skill
 ```
 
-## API surface
+## Core Data Model
 
-- `GET /api/daily-challenge` - returns a per-user challenge seeded by sport and timezone.
-- `POST /api/upload/create-url` - signs Supabase Storage uploads server-side.
-- `GET /api/clips` - retrieves clip feed (Supabase + mock fallback).
-- `POST /api/clips` - registers new clips with metadata.
-- `POST /api/clips/[id]/like` - like/unlike interactions with optimistic UI support.
-- `POST /api/clips/[id]/comments` - adds validated comments to clips.
-- `GET /api/leaderboard` - resolves leaderboard standings for dashboard widgets.
-- `POST /api/streak/increment` - records daily streak progress.
-- `GET /api/auth/callback` - Supabase OAuth callback handler that persists auth cookies.
+```ts
+type Level = {
+  id: string;
+  world: 1 | 2 | 3 | 4 | 5 | 6;
+  number: number;                // 1..120
+  skills: Skill[];               // tags drive round content
+  thresholds: { one: number; two: number; three: number };
+  neighbors: string[];           // next nodes in map
+  gate?: boolean;                // gates at 20,40,60,80,100
+  locked: boolean;               // calculated from progress
+};
 
-## Tooling and quality
+type Progress = {
+  xp: number;
+  coins: number;
+  stars: Record<Level["id"], 0 | 1 | 2 | 3>;
+  hearts: number;                // 0..5
+  streakDays: number;
+  streakFreezeArmed: boolean;
+  gatesOpened: string[];
+  inventory: { keys: number; freeze: number; doubler: number; extraHearts: number };
+  dailyQuests: DailyQuestState[];   // finish sessions, earn stars, practice scanning
+  weeklyLeaguePoints: number;
+  lastPlayedISO: string | null;
+  lastHeartsRefillISO: string | null;
+};
+```
 
-- ESLint with `eslint-config-next` enforces code style.
-- Tailwind CSS 4 with CSS variables handles sport-specific theming.
-- Radix primitives (via shadcn/ui) ensure accessible dialogs, menus, and overlays.
-- `lib/rate-limit.ts` provides basic API throttling utilities.
-- `lib/storage/local` keeps locally generated clip metadata consistent across reloads.
+All state mutators live in `lib/game/store.ts` (`earnXP`, `addStars`, `openGate`, `applyBooster`, `startSession`, `registerPerformance`, etc.). The store hydrates from `localStorage` first, then merges with `/api/progress` to simulate a future backend.
 
-## Design language
+## Persistence & APIs
 
-- Neutral grayscale base with blue/green/orange sport accent gradients.
-- Motion defaults respect `prefers-reduced-motion`.
-- Large touch targets, consistent focus rings, descriptive ARIA labels across components.
-- Responsive shell via `Header`, `MobileNav`, and `SidebarWidgets`.
+- **GET `/api/progress`** → returns in-memory `Progress` snapshot.
+- **POST `/api/progress`** → merges client payload into mock DB (stars are maxed per level, arrays deduped).
+- **GET `/api/seed`** → exposes generated level data (6 worlds × 20 nodes) for debugging or future external tooling.
 
-## Deployment notes
+`lib/game/mock-db.ts` keeps the canonical `Progress` object alive for the life of the dev server. Swap it for a real database adapter later without touching the UI.
 
-- Optimized for Vercel (App Router). Configure environment variables in the Vercel dashboard before deploying.
-- pnpm is the package manager. Enable Corepack in CI/CD to avoid frozen-lockfile failures; regenerate by running `pnpm install && pnpm install --frozen-lockfile` when dependencies drift.
-- Align Supabase auth redirect URLs with `NEXT_PUBLIC_SITE_URL`/`SITE_URL`.
+## Testing
 
-## Additional references
+- `pnpm test` runs the Vitest suite. New specs cover the reward model (`lib/game/__tests__/session.test.ts`) and the spaced-repetition scheduler (`lib/game/__tests__/scheduler.test.ts`).
+- For end-to-end coverage, wire up Playwright when you’re ready to drive the actual UI. Recommended scenarios:
+  1. Visit `/play`, start Level 1, finish with ≥ 2 stars, confirm HUD updates hearts/stars/coins.
+  2. Unlock Gate 20 with stars and verify the path animates to World 2.
+  3. Purchase a booster in `/shop`, equip via the session preview drawer, and confirm doubled coin rewards.
 
-- `AI_INTEGRATION.md` - guardrails and ideas for reintroducing AI copilots.
-- `legacy/` - archived components and routes retained for reference.
-- `styles/` - Tailwind globals and sport color variables.
-- `middleware.ts` - single source of truth for access rules and onboarding enforcement.
+## Hooking Up a Real Backend
 
-## Status
+1. Replace `lib/game/mock-db.ts` with calls into your database (Supabase, Prisma, etc.). Persist `Progress`, `SessionResult`, and quest history per user.
+2. Promote `/api/progress` to read/write authenticated user data. Keep the client store API identical to avoid UI changes.
+3. Sync `SessionResult` to analytics or match history endpoints.
+4. Pipe league standings into `/app/league/page.tsx` from a real leaderboard service and mark the logged-in user.
+5. Expand `seed.ts` with CMS-driven levels once real media and drills are ready.
 
-Everything works end-to-end in the current build. Latest updates:
-- Landing page callout and docs now highlight the upcoming personal messaging experience.
-- Fallback daily challenge defaults to American sports whenever the API fallback kicks in.
-- Quick post flow is simplified: no auto-hashtag badge, just fast sharing.
-- Challenge metric cards keep their values centered on a single line, and the friend activity feed highlights pro story beats with live reaction counts.
+## Next Steps & Ideas
+
+- Add richer round types (video replay, quick reflex taps) by expanding `SessionRound` payloads.
+- Animate star counters flying into the HUD (`framer-motion` hooks are stubbed and ready).
+- Swap the mock leaderboard with live Supabase data and weekly reset jobs.
+- Build a Playwright smoke test harness while hooking up CI to run `pnpm test` + e2e checks.
+
+This repo now centres on the Learn Soccer experience; legacy dashboards and drills remain in `legacy/` should you need reference patterns from the previous product. Have fun leveling up the map! 
