@@ -1,16 +1,43 @@
-# Learn Soccer – Gamified Skill Journey
+# AthletIQs
 
-A playful learning loop for footballers that mixes Candy Crush map progression with Duolingo’s streaks, hearts, and booster economy. Everything runs client-side today with mock APIs and local storage persistence so you can iterate on flows before wiring a backend.
+AthletIQs is a multi-sport training platform built with Next.js 15, TypeScript, Tailwind CSS, and Supabase. The app helps athletes and coaches plan sessions, capture short-form video progress, and track streaks across multiple sports from a single dashboard.
 
-## Highlights
+## Live preview
 
-- **World Map (`/play`)** – Six themed worlds with 20 levels each, gates at 20/40/60/80/100, keyboard panning, and accessible level buttons (`aria-label="Level 12, 2 stars, tap to start"`). Sticky HUD shows hearts, streak, XP, coins, and daily quests.
-- **Session Engine (`/session/[id]`)** – Three-card rounds pull from skill tags, track quiz answers + self-reported effort, calculate score ➜ stars, XP, coins, and streak updates. Animated celebration on finish.
-- **Practice Loop** – SM-2 inspired scheduler prioritises weakest skills and feeds the “Practice” button. Practice halves rewards, never consumes hearts, and protects streaks.
-- **Economy + Shop (`/shop`)** – Earn stars/XP/coins, open gates, and buy boosters (Star Doubler, Gate Key, Streak Freeze, Extra Heart). Inventory syncs via local storage before falling back to `/api/progress` mock route.
-- **League (`/league`)** – 30-player mock ladder seeded with flavour data, weekly resets, and promotion rewards.
+- Demo: [https://v0-multi-sport-app-build.vercel.app/](https://athletiqs.vercel.app/)
 
-## Quick Start
+## Current experience
+
+- Landing page with hero, feature grid, testimonial carousel, and a "How it works" journey.
+- Authenticated surfaces protected by Supabase session-aware middleware (onboarding, dashboard, profile settings, guidelines, about).
+- Four-step onboarding flow that captures sport mix, affiliations, skill level, goal focus, and privacy preferences, including a Safe Recording pledge.
+- Dashboard that blends mock feed data with locally cached uploads, daily challenges, streak insights, leaderboards, and daily hashtag prompts.
+- Upload workflow that generates Supabase Storage signed URLs, tracks progress locally, and surfaces new clips immediately.
+- Quick post dialog is streamlined for fast mood-tagged updates without auto-inserted hashtags.
+- Daily challenge generator that calls Groq (when configured) and reliably falls back to American sport skill work.
+- Friend activity stream spotlights trending pro highlights with reaction counts and timestamps.
+- Personal messages are on the roadmap, and the dashboard now includes a placeholder action that previews the upcoming DM experience.
+- Accessibility-first UI: focus-visible states, motion-safe transitions, semantic landmarks, and keyboard-friendly dialogs.
+
+## Architecture snapshot
+
+- **Frontend:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS (sport accent tokens), shadcn/ui primitives, lucide-react icon set.
+- **State and hooks:** Custom hooks for Supabase auth (`useAuth`), toast notifications, challenge caching, and countdown timers.
+- **Auth and access control:** Middleware-enforced route protection with onboarding gating (`middleware.ts`), plus an `AuthGuard` component for client-only views.
+- **Data and APIs:** REST endpoints under `app/api/*` cover clip CRUD, leaderboards, daily challenges, streak tracking, uploads, and Supabase auth callbacks. Domain models live in `types/database.ts`.
+- **Storage:** Supabase Storage-backed clip uploads with local caching helpers (`lib/storage/local`) so newly posted content appears before remote indexing.
+- **Analytics and mock data:** Rich sample datasets in `lib/mock-data.ts`, `analytics-data.ts`, and `leaderboard-data.ts` power UI prototypes ahead of real data connections.
+- **AI integrations (optional):** Daily challenge endpoint can call Groq when `GROQ_API_KEY` is defined; legacy OpenAI chat prototype is documented in `AI_INTEGRATION.md`.
+
+## Local development
+
+### Requirements
+
+- Node.js 18+
+- pnpm 10+ (use Corepack to pin versions)
+- Supabase project (required for full auth/upload flows)
+
+### Install
 
 ```bash
 pnpm install       # install dependencies
