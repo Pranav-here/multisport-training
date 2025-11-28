@@ -612,8 +612,9 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
         {/* Content */}
         <div className="bg-card border border-border rounded-3xl shadow-2xl overflow-hidden">
+          {/* @ts-expect-error - framer-motion AnimatePresence has type incompatibility with React 19 */}
           <AnimatePresence mode="wait">
-            {steps[step] as React.ReactElement}
+            {steps[step]}
           </AnimatePresence>
 
           {/* Navigation */}
