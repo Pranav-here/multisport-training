@@ -43,8 +43,18 @@ export async function POST(request: Request) {
       )
     }
 
-    // Insert analytics event
-    const { error: insertError } = await supabase.from('hashtag_analytics').insert({
+    type HashtagAnalyticsInsert = {
+      user_id: string | null
+      hashtag_id: string | null
+      sport_id: string | null
+      clip_id: string | null
+      event_type: string
+      metadata: Record<string, unknown>
+      session_id: string | null
+      device_type: string | null
+    }
+
+    const payload: HashtagAnalyticsInsert = {
       user_id: userId,
       hashtag_id: hashtag_id || null,
       sport_id: sport_id || null,
@@ -53,7 +63,16 @@ export async function POST(request: Request) {
       metadata: metadata || {},
       session_id: metadata?.session_id || null,
       device_type: metadata?.device_type || null,
-    })
+    }
+
+    // Supabase types don't include this table yet, so cast to a lightweight interface to avoid a compile-time insert error
+    type GenericSupabaseClient = {
+      from: (table: string) => { insert: (values: HashtagAnalyticsInsert) => Promise<{ error: unknown }> }
+    }
+
+    const { error: insertError } = await (supabase as unknown as GenericSupabaseClient)
+      .from('hashtag_analytics')
+      .insert(payload)
 
     if (insertError) {
       console.error('[analytics/hashtag] insert error:', insertError)

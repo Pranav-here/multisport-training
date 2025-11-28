@@ -184,7 +184,7 @@ function StatChip({
 function useGameSummary() {
   return useGameStore((state) => {
     const progress = state.progress;
-    const totalStars = Object.values(progress.stars).reduce(
+    const totalStars = Object.values(progress.stars).reduce<number>(
       (sum, stars) => sum + stars,
       0,
     );

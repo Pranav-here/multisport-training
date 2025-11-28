@@ -112,6 +112,10 @@ export async function GET(request: NextRequest) {
 
     if (cached) {
       try {
+        if (typeof cached !== "string") {
+          throw new Error("Cached payload was not a string");
+        }
+
         const parsed = JSON.parse(cached);
         logger.info({ query, requestId, cached: true }, "Served cached athlete search results");
 

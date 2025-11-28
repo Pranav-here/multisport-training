@@ -51,8 +51,12 @@ HTMLElement.prototype.getBoundingClientRect = function getBoundingClientRect(): 
   } as DOMRect;
 };
 
-Element.prototype.scrollTo = function scrollTo({ top }: ScrollToOptions) {
-  this.scrollTop = top ?? 0;
+Element.prototype.scrollTo = function scrollTo(optionsOrX?: ScrollToOptions | number, y?: number) {
+  if (typeof optionsOrX === 'number') {
+    this.scrollTop = y ?? 0;
+  } else if (optionsOrX) {
+    this.scrollTop = optionsOrX.top ?? 0;
+  }
 };
 
 if (!('clipboard' in navigator)) {

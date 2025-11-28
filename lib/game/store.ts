@@ -272,7 +272,7 @@ export const useGameStore = create<GameState>((set, get) => {
     const score = calculateScore(performance, level.thresholds);
     const stars = resolveStars(score, level.thresholds);
     const doublerActive =
-      activeSession?.booster.starDoubler && mode === "play";
+      !!(activeSession?.booster.starDoubler && mode === "play");
     const rewards = resolveRewards(level, stars, mode, doublerActive);
 
     const result: SessionResult = {

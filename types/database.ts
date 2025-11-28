@@ -14,6 +14,8 @@ export interface Database {
           id: string
           username: string | null
           display_name: string | null
+          website: string | null
+          onboarding_completed: boolean | null
           avatar_url: string | null
           bio: string | null
           location: string | null
@@ -24,6 +26,8 @@ export interface Database {
           id: string
           username?: string | null
           display_name?: string | null
+          website?: string | null
+          onboarding_completed?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           location?: string | null
@@ -34,6 +38,8 @@ export interface Database {
           id?: string
           username?: string | null
           display_name?: string | null
+          website?: string | null
+          onboarding_completed?: boolean | null
           avatar_url?: string | null
           bio?: string | null
           location?: string | null
@@ -175,16 +181,19 @@ export interface Database {
       }
       clip_likes: {
         Row: {
+          id: string
           user_id: string
           clip_id: string
           created_at: string | null
         }
         Insert: {
+          id?: string
           user_id: string
           clip_id: string
           created_at?: string | null
         }
         Update: {
+          id?: string
           user_id?: string
           clip_id?: string
           created_at?: string | null

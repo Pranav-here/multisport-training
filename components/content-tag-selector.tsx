@@ -1,15 +1,14 @@
 "use client"
 
 import { useState } from 'react';
-import { ContentTag } from '@/lib/discovery/types';
 import { CONTENT_TAGS } from '@/lib/discovery/constants';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
 interface ContentTagSelectorProps {
-  selectedTags: ContentTag[];
-  onChange: (tags: ContentTag[]) => void;
+  selectedTags: string[];
+  onChange: (tags: string[]) => void;
   maxTags?: number;
 }
 
@@ -18,7 +17,7 @@ export function ContentTagSelector({
   onChange,
   maxTags = 3,
 }: ContentTagSelectorProps) {
-  const toggleTag = (tagId: ContentTag) => {
+  const toggleTag = (tagId: string) => {
     if (selectedTags.includes(tagId)) {
       onChange(selectedTags.filter(t => t !== tagId));
     } else {

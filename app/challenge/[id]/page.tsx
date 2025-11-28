@@ -20,10 +20,10 @@ import type { Challenge } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 export default function ChallengePage() {
-  const params = useParams()
+  const params = useParams<{ id?: string }>()
   const router = useRouter()
   const { session } = useAuth()
-  const challengeId = params.id as string
+  const challengeId = params?.id ? String(params.id) : ''
   const [challenge, setChallenge] = useState<Challenge | null>(null)
   const [loading, setLoading] = useState(true)
   const countdown = useCountdown(challenge?.deadline || '')

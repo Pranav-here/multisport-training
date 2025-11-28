@@ -195,7 +195,10 @@ export function DiscoverySettingsCard() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="allowMessages">Who can send you messages?</Label>
-            <Select value={allowMessages} onValueChange={(v: any) => setAllowMessages(v)}>
+            <Select
+              value={allowMessages}
+              onValueChange={(value: 'verified_scouts' | 'all' | 'none') => setAllowMessages(value)}
+            >
               <SelectTrigger id="allowMessages">
                 <SelectValue />
               </SelectTrigger>
@@ -206,7 +209,7 @@ export function DiscoverySettingsCard() {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              We recommend "Verified scouts only" for safety
+              We recommend &quot;Verified scouts only&quot; for safety
             </p>
           </div>
 
@@ -225,7 +228,6 @@ export function DiscoverySettingsCard() {
               <Switch
                 checked={showEmail}
                 onCheckedChange={setShowEmail}
-                icon={showEmail ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
               />
             </div>
 
@@ -239,7 +241,6 @@ export function DiscoverySettingsCard() {
               <Switch
                 checked={showPhone}
                 onCheckedChange={setShowPhone}
-                icon={showPhone ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
               />
             </div>
           </div>
@@ -254,7 +255,7 @@ export function DiscoverySettingsCard() {
             Discovery Activity
           </CardTitle>
           <CardDescription>
-            See who's viewing and bookmarking your profile
+            See who&apos;s viewing and bookmarking your profile
           </CardDescription>
         </CardHeader>
         <CardContent>

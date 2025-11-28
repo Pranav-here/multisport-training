@@ -207,6 +207,10 @@ export async function GET(request: Request) {
 
     if (cached) {
       try {
+        if (typeof cached !== "string") {
+          throw new Error("Cached challenge payload was not a string");
+        }
+
         const parsed = JSON.parse(cached);
         logger.info({ userId, localDate, requestId, cached: true }, "Served cached daily challenge");
         logRequest({

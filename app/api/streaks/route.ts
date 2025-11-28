@@ -3,6 +3,31 @@ import { createServerClient } from '@/lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
+type SportStreakRecord = {
+  id: string | null
+  sport_id: number | null
+  sports?: { slug?: string | null; name?: string | null }
+  current_streak: number
+  best_streak: number
+  last_activity_date: string | null
+  weekly_goal: number
+  weekly_progress: number
+  activity_calendar?: unknown[] | null
+  total_days_active: number
+}
+
+type StreakFreezeRecord = {
+  id: string
+  freeze_type: string | null
+  earned_by_streak_days: number | null
+  purchased_with_coins: boolean | null
+  status: string | null
+  expires_at: string | null
+  auto_apply: boolean | null
+  earned_at: string | null
+  sport_streaks?: { sports?: { slug?: string | null; name?: string | null } }
+}
+
 export async function GET(request: Request) {
   const supabase = await createServerClient()
 
@@ -46,7 +71,9 @@ export async function GET(request: Request) {
 
     const today = new Date().toISOString().split('T')[0]
 
-    const formattedStreaks = (streaks || []).map((s) => ({
+    const streakRows = (streaks ?? []) as SportStreakRecord[]
+
+    const formattedStreaks = streakRows.map((s) => ({
       id: s.id,
       sportId: s.sport_id,
       sportSlug: s.sports?.slug || null,
@@ -67,7 +94,8 @@ export async function GET(request: Request) {
     // Find per-sport streaks
     const sportStreaks = formattedStreaks.filter((s) => s.sportId !== null)
 
-    const formattedFreezes = (freezes || []).map((f) => ({
+    const freezeRows = (freezes ?? []) as StreakFreezeRecord[]
+    const formattedFreezes = freezeRows.map((f) => ({
       id: f.id,
       freezeType: f.freeze_type,
       earnedByStreakDays: f.earned_by_streak_days,

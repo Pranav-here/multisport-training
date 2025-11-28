@@ -419,7 +419,7 @@ export function EnhancedStreakWidget({
               <div className="p-1.5 rounded-lg bg-sport-blue/10">
                 <Sparkles className="h-4 w-4 text-sport-blue" />
               </div>
-              <p className="text-sm font-semibold text-foreground">Friends' streaks</p>
+              <p className="text-sm font-semibold text-foreground">Friends&apos; streaks</p>
             </div>
             <div className="space-y-2">
               {friendStreaks.slice(0, 3).map((friend) => (

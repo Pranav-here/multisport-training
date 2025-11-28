@@ -65,7 +65,7 @@ export function NoSportsEmptyState() {
         </div>
 
         <p className="text-xs text-muted-foreground pt-2">
-          You're currently seeing general challenges. Add your sports for a personalized experience.
+          You&apos;re currently seeing general challenges. Add your sports for a personalized experience.
         </p>
       </CardContent>
     </Card>

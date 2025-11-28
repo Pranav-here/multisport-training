@@ -9,7 +9,7 @@ import { DiscoveryClip, ScoutProfile, ModerationQueueItem } from './types';
 // The current placeholder videos are test files that will play in any browser
 // Replace these with actual sports training clips when connecting to Supabase
 
-export const MOCK_DISCOVERY_CLIPS: DiscoveryClip[] = [
+const BASE_DISCOVERY_CLIPS = [
   {
     id: 'disc-1',
     athleteId: 'athlete-1',
@@ -393,6 +393,52 @@ export const MOCK_DISCOVERY_CLIPS: DiscoveryClip[] = [
     moderationStatus: 'approved',
   },
 ];
+
+const WHOLESOME_TAGS = new Set(['sportsmanship', 'inclusive']);
+
+export const MOCK_DISCOVERY_CLIPS: DiscoveryClip[] = BASE_DISCOVERY_CLIPS.map((clip) => {
+  const base = clip as Partial<DiscoveryClip> & {
+    id: string;
+    athleteId: string;
+    athleteName: string;
+    sport: string;
+    videoUrl: string;
+    caption: string;
+    createdAt: string;
+    tags?: string[];
+    upvotes?: number;
+    views?: number;
+    duration?: number;
+  };
+
+  const tags = base.tags ?? [];
+  const upvotes = base.upvotes ?? 0;
+  const usernameSource = base.athleteName || base.athleteId;
+  const slugifiedUsername = usernameSource
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+  const athleteUsername = base.athleteUsername ?? (slugifiedUsername || base.athleteId);
+  const isWholesome = base.isWholesome ?? tags.some((tag) => WHOLESOME_TAGS.has(tag));
+
+  return {
+    ...base,
+    athleteUsername,
+    tags,
+    upvotes,
+    contentRating: base.contentRating ?? 'sfw',
+    isWholesome,
+    comments: base.comments ?? Math.floor(upvotes / 8),
+    shares: base.shares ?? Math.floor(upvotes / 12),
+    views: base.views ?? Math.max(upvotes * 3, 0),
+    hasUpvoted: base.hasUpvoted ?? false,
+    isBookmarked: base.isBookmarked ?? false,
+    isSponsored: base.isSponsored ?? false,
+    sponsorName: base.sponsorName,
+    sponsorLogo: base.sponsorLogo,
+    moderationStatus: base.moderationStatus ?? 'approved',
+  };
+});
 
 export const MOCK_SCOUTS: ScoutProfile[] = [
   {

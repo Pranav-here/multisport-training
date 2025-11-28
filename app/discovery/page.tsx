@@ -148,7 +148,7 @@ export default function DiscoveryPage() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">More Live Streams Coming Soon</h2>
               <p className="text-white/60">
-                We're partnering with ESPN, NBC Sports, and more to bring you live sports from around the world
+                We&apos;re partnering with ESPN, NBC Sports, and more to bring you live sports from around the world
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { SchedulerEntry, Skill, SKILLS } from "./types";
+export type { SchedulerEntry } from "./types";
 import { toISODateTime } from "./progress";
 
 const DEFAULT_INTERVAL = 1;

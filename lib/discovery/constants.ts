@@ -1,4 +1,4 @@
-import { SportLevel, ContentRating, RegionScope } from './types'
+import { SportLevel, ContentRating, RegionScope, type ContentTag } from './types'
 
 export const SPORT_LEVELS: { value: SportLevel; label: string; description: string }[] = [
   {
@@ -154,17 +154,17 @@ export const MAJOR_CITIES = [
   { city: 'Las Vegas', state: 'NV', region: 'west' },
 ]
 
-export const CONTENT_TAGS = [
-  { id: 'highlight', label: 'Highlight', icon: '⭐', color: 'bg-yellow-500' },
-  { id: 'game-winning', label: 'Game Winner', icon: '🏆', color: 'bg-green-500' },
-  { id: 'clutch', label: 'Clutch', icon: '🔥', color: 'bg-orange-500' },
-  { id: 'training', label: 'Training', icon: '💪', color: 'bg-blue-500' },
-  { id: 'tutorial', label: 'Tutorial', icon: '📚', color: 'bg-purple-500' },
-  { id: 'funny', label: 'Funny', icon: '😂', color: 'bg-pink-500' },
-  { id: 'fail', label: 'Epic Fail', icon: '😅', color: 'bg-red-500' },
-  { id: 'comeback', label: 'Comeback', icon: '📈', color: 'bg-teal-500' },
-  { id: 'rookie', label: 'Rookie', icon: '🌟', color: 'bg-indigo-500' },
-  { id: 'veteran', label: 'Veteran', icon: '👑', color: 'bg-amber-500' },
+export const CONTENT_TAGS: ContentTag[] = [
+  { id: 'highlight', label: 'Highlight', icon: '⭐', color: 'bg-yellow-500', description: 'Standout play or moment' },
+  { id: 'game-winning', label: 'Game Winner', icon: '🏆', color: 'bg-green-500', description: 'Play that sealed the victory' },
+  { id: 'clutch', label: 'Clutch', icon: '🔥', color: 'bg-orange-500', description: 'High-pressure performance' },
+  { id: 'training', label: 'Training', icon: '💪', color: 'bg-blue-500', description: 'Workouts and drills' },
+  { id: 'tutorial', label: 'Tutorial', icon: '📚', color: 'bg-purple-500', description: 'How-to or tips' },
+  { id: 'funny', label: 'Funny', icon: '😂', color: 'bg-pink-500', description: 'Lighthearted moments' },
+  { id: 'fail', label: 'Epic Fail', icon: '😅', color: 'bg-red-500', description: 'Mishaps and blunders' },
+  { id: 'comeback', label: 'Comeback', icon: '📈', color: 'bg-teal-500', description: 'Turning the game around' },
+  { id: 'rookie', label: 'Rookie', icon: '🌟', color: 'bg-indigo-500', description: 'New or emerging athlete' },
+  { id: 'veteran', label: 'Veteran', icon: '👑', color: 'bg-amber-500', description: 'Experienced leadership' },
 ]
 
 export const LIVE_STREAM_PROVIDERS = [

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AuthGuard } from '@/components/auth-guard'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -55,7 +55,7 @@ type ProfilesClient = {
   }
 }
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -674,7 +674,7 @@ export default function SettingsPage() {
                       </div>
                       <Alert className="border-muted-foreground/20 bg-muted/30">
                         <AlertDescription className="text-xs">
-                          Quiet hours feature coming soon. You'll be able to set custom time windows when you don't want to be disturbed.
+                          Quiet hours feature coming soon. You&apos;ll be able to set custom time windows when you don&apos;t want to be disturbed.
                         </AlertDescription>
                       </Alert>
                     </div>
@@ -985,7 +985,7 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    Have questions or need assistance? We're here to help!
+                    Have questions or need assistance? We&apos;re here to help!
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="outline" size="sm">Visit Help Center</Button>
@@ -999,5 +999,17 @@ export default function SettingsPage() {
         </div>
       </div>
     </AuthGuard>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    }>
+      <SettingsPageContent />
+    </Suspense>
   )
 }

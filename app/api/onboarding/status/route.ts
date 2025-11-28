@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+import type { Database } from '@/types/database'
 
 export async function GET() {
   try {
@@ -15,11 +16,13 @@ export async function GET() {
     }
 
     // Check if user has completed onboarding by checking if they have a profile with required fields
-    const { data: profile, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('display_name, username, onboarding_completed')
       .eq('id', user.id)
       .single()
+
+    const profile = profileData as Database['public']['Tables']['profiles']['Row'] | null
 
     if (profileError) {
       // Profile doesn't exist yet, onboarding not completed

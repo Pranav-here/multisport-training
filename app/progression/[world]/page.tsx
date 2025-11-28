@@ -1,9 +1,12 @@
 import { ProgressionShell } from '../_components/progression-shell'
 
-interface WorldPageProps {
-  params: { world: string }
+type WorldPageProps = {
+  params?: Promise<{ world: string }>
 }
 
-export default function WorldPage({ params }: WorldPageProps) {
-  return <ProgressionShell initialWorldId={params.world} />
+export default async function WorldPage({ params }: WorldPageProps) {
+  const resolvedParams = await params
+  const { world = '' } = resolvedParams ?? {}
+
+  return <ProgressionShell initialWorldId={world} />
 }

@@ -114,7 +114,7 @@ export function DailyHashtagChallenge({
                 <Hash className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h3 className="text-xs font-medium text-muted-foreground">Today's Challenge</h3>
+                <h3 className="text-xs font-medium text-muted-foreground">Today&apos;s Challenge</h3>
                 <Badge
                   variant="secondary"
                   className="mt-0.5 rounded-full bg-gradient-to-r from-sport-blue/20 to-sport-orange/20 px-3 py-0.5 text-sm font-bold text-foreground"

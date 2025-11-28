@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
+import type { Database } from '@/types/database'
 
 interface OnboardingData {
   sports: string[]
@@ -42,17 +43,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const sportIdMap = new Map(sportsData?.map((s) => [s.slug, s.id]) || [])
+    const sportsRows = (sportsData ?? []) as Database['public']['Tables']['sports']['Row'][]
+    const sportIdMap = new Map(sportsRows.map((s) => [s.slug, s.id]))
 
-    // Upsert profile
-    const { error: profileError } = await supabase.from('profiles').upsert({
+    type ProfileInsert = Database['public']['Tables']['profiles']['Insert']
+    type ProfileClient = {
+      from: (table: string) => { upsert: (values: ProfileInsert) => Promise<{ error: unknown }> }
+    }
+
+    const profilePayload: ProfileInsert = {
       id: user.id,
       display_name: username || 'Athlete',
       bio: bio || null,
       username: username.toLowerCase().replace(/[^a-z0-9_]/g, '_') || null,
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
-    })
+    }
+
+    const { error: profileError } = await (supabase as unknown as ProfileClient)
+      .from('profiles')
+      .upsert(profilePayload)
 
     if (profileError) {
       console.error('Error updating profile:', profileError)
@@ -72,22 +82,27 @@ export async function POST(request: NextRequest) {
       console.error('Error deleting user sports:', deleteError)
     }
 
+    type UserSportInsert = Database['public']['Tables']['user_sports']['Insert']
+    type UserSportsClient = {
+      from: (table: string) => { insert: (values: UserSportInsert[]) => Promise<{ error: unknown }> }
+    }
+
     // Insert new user_sports entries
-    const userSportsEntries = sports
-      .map((slug) => {
-        const sportId = sportIdMap.get(slug)
-        if (!sportId) return null
-        return {
-          user_id: user.id,
-          sport_id: sportId,
-          skill_level: 'intermediate',
-          goals: `${goals.weeklySessions}x per week`,
-        }
+    const userSportsEntries: UserSportInsert[] = []
+    for (const slug of sports) {
+      const sportId = sportIdMap.get(slug)
+      if (!sportId) continue
+
+      userSportsEntries.push({
+        user_id: user.id,
+        sport_id: sportId,
+        skill_level: 'intermediate',
+        goals: `${goals.weeklySessions}x per week`,
       })
-      .filter(Boolean)
+    }
 
     if (userSportsEntries.length > 0) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await (supabase as unknown as UserSportsClient)
         .from('user_sports')
         .insert(userSportsEntries)
 

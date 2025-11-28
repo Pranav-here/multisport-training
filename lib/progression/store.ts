@@ -24,7 +24,10 @@ const noopStorage: Storage = {
   length: 0,
 }
 
-const storage = createJSONStorage<ProgressionState>(() =>
+// Define what we actually persist
+type PersistedProgressionState = Pick<ProgressionState, 'weeklyPlan' | 'filters'>
+
+const storage = createJSONStorage<PersistedProgressionState>(() =>
   typeof window !== 'undefined' ? window.localStorage : noopStorage,
 )
 
@@ -33,11 +36,12 @@ function memoizeLast<Args extends unknown[], Result>(fn: (...args: Args) => Resu
   let lastResult: Result
   let hasResult = false
   return (...args: Args): Result => {
+    const prevArgs = lastArgs
     if (
       hasResult &&
-      lastArgs &&
-      args.length === lastArgs.length &&
-      args.every((arg, index) => Object.is(arg, lastArgs[index]))
+      prevArgs &&
+      args.length === prevArgs.length &&
+      args.every((arg, index) => Object.is(arg, prevArgs[index]))
     ) {
       return lastResult
     }

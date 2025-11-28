@@ -1,6 +1,7 @@
 // Adapter to convert old discovery clips to new format
 import { MOCK_DISCOVERY_CLIPS as OLD_CLIPS } from './mock-data'
 import { mockPosts } from '../mock-data'
+import type { ClipReaction, DiscoveryClip } from './types'
 
 interface NewDiscoveryClip {
   id: string
@@ -27,7 +28,7 @@ interface NewDiscoveryClip {
   views: number
   hasUpvoted: boolean
   isBookmarked: boolean
-  reactions?: any[]
+  reactions?: ClipReaction[]
   tags: string[]
   isSponsored: boolean
   sponsorName?: string
@@ -38,8 +39,7 @@ interface NewDiscoveryClip {
 
 // Convert old clips to new format
 export function convertClips(): NewDiscoveryClip[] {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return OLD_CLIPS.map((clip: any) => ({
+  return OLD_CLIPS.map((clip: DiscoveryClip) => ({
     id: clip.id,
     videoUrl: clip.videoUrl,
     thumbnailUrl: clip.thumbnailUrl,
@@ -71,7 +71,7 @@ export function convertClips(): NewDiscoveryClip[] {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function determineContentRating(clip: any): 'sfw' | 'nsfw' | 'wholesome' {
+function determineContentRating(clip: DiscoveryClip): 'sfw' | 'nsfw' | 'wholesome' {
   if (clip.tags?.includes('sportsmanship') || clip.tags?.includes('inclusive')) {
     return 'wholesome'
   }
@@ -79,7 +79,7 @@ function determineContentRating(clip: any): 'sfw' | 'nsfw' | 'wholesome' {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isWholesomeClip(clip: any): boolean {
+function isWholesomeClip(clip: DiscoveryClip): boolean {
   return clip.tags?.includes('sportsmanship') || clip.tags?.includes('inclusive') || false
 }
 

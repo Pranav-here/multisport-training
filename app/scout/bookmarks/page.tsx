@@ -39,9 +39,9 @@ interface BookmarkedAthlete {
 const MOCK_BOOKMARKS: BookmarkedAthlete[] = MOCK_DISCOVERY_CLIPS.slice(0, 3).map(clip => ({
   id: clip.athleteId,
   athleteName: clip.athleteName,
-  athleteAvatar: clip.athleteAvatar,
-  athleteAge: clip.athleteAge,
-  athleteLocation: clip.athleteLocation,
+  athleteAvatar: clip.athleteAvatar ?? '',
+  athleteAge: clip.athleteAge ?? 0,
+  athleteLocation: clip.athleteLocation ?? '',
   sport: clip.sport,
   totalClips: Math.floor(Math.random() * 20) + 5,
   totalUpvotes: clip.upvotes,

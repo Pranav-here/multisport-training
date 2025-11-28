@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { createServerClient } from '@/lib/supabase-server'
+import type { Database } from '@/types/database'
 
 function resolveRedirectPath(candidate: string | null | undefined) {
   if (!candidate) {
@@ -42,11 +43,13 @@ export async function GET(request: Request) {
 
   if (user) {
     // Check if user has completed onboarding
-    const { data: profile, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id, display_name, username, onboarding_completed')
       .eq('id', user.id)
       .maybeSingle()
+
+    const profile = profileData as Database['public']['Tables']['profiles']['Row'] | null
 
     if (profileError) {
       console.error('[api/auth/callback] profile lookup', profileError)

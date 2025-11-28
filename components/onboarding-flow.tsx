@@ -169,7 +169,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     >
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-2">What sports do you play?</h2>
-        <p className="text-muted-foreground">Select all that apply - we'll track your progress in each</p>
+        <p className="text-muted-foreground">Select all that apply - we&apos;ll track your progress in each</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
@@ -224,7 +224,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       )}
 
       <div className="max-w-2xl mx-auto">
-        <h3 className="text-xl font-bold mb-4 text-center">What's your skill level?</h3>
+        <h3 className="text-xl font-bold mb-4 text-center">What&apos;s your skill level?</h3>
         <div className="grid grid-cols-3 gap-3">
           {['starter', 'intermediate', 'advanced'].map((level) => (
             <button
@@ -416,7 +416,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             <div className="flex-1">
               <h3 className="text-lg font-semibold mb-2">Safe Recording Pledge <span className="text-red-500">*</span></h3>
               <p className="text-sm text-muted-foreground mb-2">
-                I will not film minors or teammates without explicit permission, and I'll respect facility policies about recording.
+                I will not film minors or teammates without explicit permission, and I&apos;ll respect facility policies about recording.
               </p>
               <p className="text-xs text-muted-foreground">
                 Breaking this trust can remove your access to posting clips.
@@ -576,7 +576,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         </div>
       </motion.div>
 
-      <h2 className="text-4xl font-black mb-4">You're all set!</h2>
+      <h2 className="text-4xl font-black mb-4">You&apos;re all set!</h2>
       <p className="text-xl text-muted-foreground mb-8 max-w-md">
         Time to start your journey. Upload your first clip or explore what others are doing!
       </p>
@@ -584,7 +584,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 max-w-md">
         <p className="text-sm text-muted-foreground mb-4">Quick tip:</p>
         <p className="text-sm">
-          Check out today's <span className="font-bold text-sport-blue">#DailyChallenge</span> to earn points and climb the leaderboard. Train daily to build your streak!
+          Check out today&apos;s <span className="font-bold text-sport-blue">#DailyChallenge</span> to earn points and climb the leaderboard. Train daily to build your streak!
         </p>
       </div>
     </motion.div>,
@@ -641,7 +641,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 onClick={handleComplete}
                 className="gap-2 bg-gradient-to-r from-sport-green to-sport-blue hover:opacity-90"
               >
-                Let's Go!
+                Let&apos;s Go!
                 <Sparkles className="h-4 w-4" />
               </Button>
             )}

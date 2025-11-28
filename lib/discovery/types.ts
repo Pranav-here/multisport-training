@@ -10,6 +10,7 @@ export type SportLevel =
   | 'olympic'
 
 export type RegionScope = 'local' | 'regional' | 'national' | 'international'
+export type AppMode = 'training' | 'discovery'
 
 export interface UserDiscoveryPreferences {
   id: string
@@ -59,6 +60,16 @@ export interface CheerBadge {
   unlockRequirement?: string
 }
 
+export interface ContentTag {
+  id: string
+  label: string
+  icon: string
+  color: string
+  description?: string
+}
+
+export type PostDestination = 'training_only' | 'discovery_only' | 'both'
+
 export interface ClipReaction {
   id: string
   clipId: string
@@ -87,6 +98,32 @@ export interface Comment {
     avatarUrl?: string
   }
   replies?: Comment[]
+}
+
+export type ModerationStatus = 'pending' | 'approved' | 'rejected'
+
+export interface ModerationQueueItem {
+  id: string
+  clipId: string
+  athleteId: string
+  athleteName: string
+  videoUrl: string
+  thumbnailUrl?: string
+  caption: string
+  tags: string[]
+  sport: string
+  submittedAt: string
+  moderationStatus: ModerationStatus
+}
+
+export interface ScoutProfile {
+  id: string
+  name: string
+  organization: string
+  role: string
+  sports: string[]
+  verified: boolean
+  avatarUrl?: string
 }
 
 export interface LiveStream {
@@ -161,6 +198,7 @@ export interface DiscoveryClip {
   comments: number
   shares: number
   views: number
+  duration?: number
   hasUpvoted: boolean
   isBookmarked: boolean
   reactions?: ClipReaction[]
@@ -172,6 +210,8 @@ export interface DiscoveryClip {
   isSponsored: boolean
   sponsorName?: string
   sponsorLogo?: string
+
+  moderationStatus?: ModerationStatus
 
   createdAt: string
   updatedAt?: string

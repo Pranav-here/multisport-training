@@ -15,6 +15,10 @@ interface ActionResult<T = void> {
   error?: string;
 }
 
+type ClipLikeInsert = { clip_id: string; user_id: string };
+type ClipLikeInsertResult = { error: { message?: string } | null };
+type ClipRecord = { user_id: string };
+
 /**
  * Toggle like on a clip
  */
@@ -47,9 +51,11 @@ export async function toggleClipLike(clipId: string): Promise<ActionResult<{ lik
 
     let liked = false;
 
-    if (existingLike) {
+    const likeRecord = existingLike as { id: string } | null;
+
+    if (likeRecord) {
       // Unlike
-      const { error: deleteError } = await supabase.from("clip_likes").delete().eq("id", existingLike.id);
+      const { error: deleteError } = await supabase.from("clip_likes").delete().eq("id", likeRecord.id);
 
       if (deleteError) {
         logger.error({ error: deleteError.message, clipId, userId: user.id }, "Failed to unlike clip");
@@ -59,7 +65,11 @@ export async function toggleClipLike(clipId: string): Promise<ActionResult<{ lik
       liked = false;
     } else {
       // Like
-      const { error: insertError } = await supabase.from("clip_likes").insert({
+      const likeInsertClient = supabase as unknown as {
+        from: (table: string) => { insert: (values: ClipLikeInsert) => Promise<ClipLikeInsertResult> }
+      };
+
+      const { error: insertError } = await likeInsertClient.from("clip_likes").insert({
         clip_id: clipId,
         user_id: user.id,
       });
@@ -128,8 +138,10 @@ export async function deleteClip(clipId: string): Promise<ActionResult> {
       return { success: false, error: "Clip not found" };
     }
 
-    if (clip.user_id !== user.id) {
-      logger.warn({ clipId, userId: user.id, ownerId: clip.user_id }, "Unauthorized clip deletion attempt");
+    const clipRecord = clip as ClipRecord;
+
+    if (clipRecord.user_id !== user.id) {
+      logger.warn({ clipId, userId: user.id, ownerId: clipRecord.user_id }, "Unauthorized clip deletion attempt");
       return { success: false, error: "You don't have permission to delete this clip" };
     }
 

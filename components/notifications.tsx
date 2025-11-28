@@ -140,7 +140,7 @@ export function NotificationsList() {
               </div>
               <p className="text-sm font-medium">No notifications</p>
               <p className="text-xs text-muted-foreground mt-1">
-                We'll notify you when something happens
+                We&apos;ll notify you when something happens
               </p>
             </div>
           ) : (

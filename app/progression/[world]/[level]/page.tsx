@@ -1,9 +1,12 @@
 import { ProgressionShell } from '../../_components/progression-shell'
 
-interface LevelPageProps {
-  params: { world: string; level: string }
+type LevelPageProps = {
+  params?: Promise<{ world: string; level: string }>
 }
 
-export default function LevelPage({ params }: LevelPageProps) {
-  return <ProgressionShell initialWorldId={params.world} initialLevelId={params.level} />
+export default async function LevelPage({ params }: LevelPageProps) {
+  const resolvedParams = await params
+  const { world = '', level = '' } = resolvedParams ?? {}
+
+  return <ProgressionShell initialWorldId={world} initialLevelId={level} />
 }

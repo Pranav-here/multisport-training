@@ -18,9 +18,16 @@ export function AppModeProvider({ children }: { children: ReactNode }) {
 
   // Sync mode with current route
   useEffect(() => {
-    if (pathname === '/discovery') {
+    const currentPath = pathname ?? '';
+
+    if (currentPath === '/discovery') {
       setModeState('discovery');
-    } else if (pathname === '/dashboard' || pathname === '/training' || pathname === '/' || pathname.startsWith('/training/')) {
+    } else if (
+      currentPath === '/dashboard' ||
+      currentPath === '/training' ||
+      currentPath === '/' ||
+      currentPath.startsWith('/training/')
+    ) {
       setModeState('training');
     } else {
       // For other routes, load from localStorage

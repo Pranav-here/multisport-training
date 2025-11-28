@@ -19,6 +19,25 @@ interface SportData {
   name: string;
 }
 
+type ClipRow = {
+  id: string;
+  user_id: string;
+  caption: string | null;
+  video_url: string;
+  thumbnail_url: string | null;
+  sport?: SportData | null;
+  hashtag?: { id: string; name: string } | null;
+  created_at: string;
+  user?: UserProfileData | null;
+};
+
+type LeaderboardRow = {
+  user_id: string;
+  score: number | null;
+  sport?: SportData | null;
+  user?: UserProfileData | null;
+};
+
 export interface DashboardClip {
   id: string;
   userId: string;
@@ -101,9 +120,11 @@ export const fetchDashboardClips = cache(async (userId?: string): Promise<Dashbo
       return [];
     }
 
+    const clipRows = (clips ?? []) as ClipRow[];
+
     // Fetch like counts and user likes in parallel
     const clipsWithMetrics: DashboardClip[] = await Promise.all(
-      clips.map(async (clip) => {
+      clipRows.map(async (clip) => {
         const [likesResult, userLikeResult] = userId
           ? await Promise.all([
               supabase.from("clip_likes").select("id", { count: "exact", head: true }).eq("clip_id", clip.id),
@@ -138,7 +159,7 @@ export const fetchDashboardClips = cache(async (userId?: string): Promise<Dashbo
             username: (clip.user as UserProfileData | null)?.username ?? null,
             avatarUrl: (clip.user as UserProfileData | null)?.avatar_url ?? null,
           },
-          createdAt: clip.created_at,
+          createdAt: clip.created_at ?? '',
         };
       })
     );
@@ -188,7 +209,9 @@ export const fetchLeaderboard = cache(async (): Promise<LeaderboardEntry[]> => {
       return [];
     }
 
-    const mapped: LeaderboardEntry[] = leaderboard.map((entry, index) => {
+    const leaderboardRows = (leaderboard ?? []) as LeaderboardRow[];
+
+    const mapped: LeaderboardEntry[] = leaderboardRows.map((entry, index) => {
       const userData = entry.user as UserProfileData | null;
       const sportData = entry.sport as SportData | null;
 
@@ -247,13 +270,14 @@ export const fetchUserStreak = cache(async (userId: string): Promise<StreakData>
       return defaultStreak;
     }
 
+    const streakRow = data as { current_streak?: number | null; longest_streak?: number | null; last_activity_date?: string | null };
     const today = new Date().toISOString().slice(0, 10);
     const streak: StreakData = {
-      currentStreak: data.current_streak ?? 0,
-      longestStreak: data.longest_streak ?? 0,
+      currentStreak: streakRow.current_streak ?? 0,
+      longestStreak: streakRow.longest_streak ?? 0,
       weeklyGoal: 7,
-      weeklyProgress: Math.min(data.current_streak ?? 0, 7),
-      todayCompleted: data.last_activity_date === today,
+      weeklyProgress: Math.min(streakRow.current_streak ?? 0, 7),
+      todayCompleted: streakRow.last_activity_date === today,
     };
 
     logger.info({ userId, streak, duration: Date.now() - startTime }, "Fetched user streak");

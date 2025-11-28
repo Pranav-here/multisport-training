@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast'
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
 import type { ClipApiResponse } from '@/lib/clips'
 import type { ApiResponse } from '@/lib/api-response'
-import type { PostDestination, ContentTag } from '@/lib/discovery/types'
+import type { PostDestination } from '@/lib/discovery/types'
 
 const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024
 const MAX_CAPTION_LENGTH = 500
@@ -120,7 +120,7 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
   const [filePreview, setFilePreview] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
   const [postDestination, setPostDestination] = useState<PostDestination>('training_only')
-  const [contentTags, setContentTags] = useState<ContentTag[]>([])
+  const [contentTags, setContentTags] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [phase, setPhase] = useState<UploadProgressPhase>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

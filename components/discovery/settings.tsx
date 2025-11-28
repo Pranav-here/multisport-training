@@ -124,7 +124,7 @@ export function DiscoverySettings({ preferences, onClose, onSave }: DiscoverySet
 
                 {favoriteSports.length === 0 && (
                   <p className="text-sm text-yellow-400 text-center">
-                    No sports selected - you'll see content from all sports
+                    No sports selected - you&apos;ll see content from all sports
                   </p>
                 )}
               </div>

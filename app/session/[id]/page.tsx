@@ -16,9 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useGameStore } from "@/lib/game/store";
 import { SessionMode, SessionResult } from "@/lib/game/types";
 
-type SessionPageProps = {
-  params: { id: string };
-};
+type SessionPageProps = { params?: Promise<{ id: string }> };
 
 export default function SessionPage({ params }: SessionPageProps) {
   const router = useRouter();
@@ -26,7 +24,8 @@ export default function SessionPage({ params }: SessionPageProps) {
   const { toast } = useToast();
 
   const modeParam = searchParams?.get("mode") === "practice" ? "practice" : "play";
-  const levelId = params.id;
+  const resolvedParams = (params ?? {}) as Awaited<SessionPageProps["params"]>;
+  const levelId = resolvedParams?.id ?? "";
 
   const loadProgress = useGameStore((state) => state.loadProgress);
   const saveProgress = useGameStore((state) => state.saveProgress);

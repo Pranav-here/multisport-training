@@ -1,6 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { Crown, Lock, Star } from "lucide-react";
-import { type ButtonHTMLAttributes } from "react";
 
 import { cn } from "@/lib/utils";
 import { Level } from "@/lib/game/types";
@@ -11,7 +10,7 @@ type LevelNodeProps = {
   isCurrent?: boolean;
   onSelect?: (level: Level) => void;
   size?: "md" | "lg";
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onSelect">;
+} & Omit<HTMLMotionProps<"button">, "onSelect">;
 
 const bounce = {
   initial: { scale: 0.8, opacity: 0 },
