@@ -613,7 +613,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         {/* Content */}
         <div className="bg-card border border-border rounded-3xl shadow-2xl overflow-hidden">
           <AnimatePresence mode="wait">
-            {steps[step]}
+            {steps[step] as React.ReactElement}
           </AnimatePresence>
 
           {/* Navigation */}
