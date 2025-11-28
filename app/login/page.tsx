@@ -193,9 +193,11 @@ function LoginPageContent() {
   }, [buildCallbackUrl, email, redirectTarget, router, supabase, toast])
 
   return (
-    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/60 p-4">
+    <div className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-background via-background to-muted/60 p-4 dark:bg-black">
       <span className="pointer-events-none absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl transition-all dark:bg-primary/10" aria-hidden="true" />
-      <Card className="w-full max-w-md backdrop-blur-sm bg-card/95 shadow-2xl">
+      <span className="pointer-events-none absolute top-1/2 -left-32 h-96 w-96 -translate-y-1/2 rounded-full bg-sport-blue/15 blur-3xl dark:bg-sport-blue/8" aria-hidden="true" />
+      <span className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-sport-orange/15 blur-3xl dark:bg-sport-orange/8" aria-hidden="true" />
+      <Card className="w-full max-w-md backdrop-blur-xl bg-card/95 shadow-2xl dark:bg-white/[0.06] dark:border-white/12 dark:shadow-[0_25px_60px_rgba(0,0,0,0.8)] animate-fade-in-up">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex flex-col items-center gap-2">
             <Image
@@ -208,7 +210,7 @@ function LoginPageContent() {
             />
             <BrandWordmark className="text-3xl leading-none" />
           </div>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
+          <CardTitle className="text-2xl">Welcome Back!</CardTitle>
           <CardDescription>Sign in to continue training with AthletIQs.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -239,7 +241,7 @@ function LoginPageContent() {
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
               disabled={isPasswordLoading || isMagicLoading || isOauthLoading}
             >
               {isPasswordLoading ? 'Signing in...' : 'Sign in'}
@@ -247,7 +249,7 @@ function LoginPageContent() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
               onClick={() => {
                 void handleMagicLink()
               }}
@@ -269,7 +271,7 @@ function LoginPageContent() {
           <Button
             type="button"
             variant="outline"
-            className="w-full bg-transparent"
+            className="w-full bg-transparent transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
             onClick={handleGoogleLogin}
             disabled={isOauthLoading || isMagicLoading || isPasswordLoading}
           >

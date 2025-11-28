@@ -25,17 +25,13 @@ export interface CreateServerClientOptions {
   response?: import('next/server').NextResponse
 }
 
-export function createServerClient({ response }: CreateServerClientOptions = {}) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const cookieStore = cookies() as any & {
-    set?: (cookie: { name: string; value: string } & CookieOptions) => void
-  }
+export async function createServerClient({ response }: CreateServerClientOptions = {}) {
+  const cookieStore = await cookies()
 
   return createSupabaseServerClient<Database>(resolvedSupabaseUrl, resolvedSupabaseAnonKey, {
     cookies: {
       getAll() {
-        const all = cookieStore.getAll() as Array<{ name: string; value: string }>
-        return all.map(({ name, value }) => ({ name, value }))
+        return cookieStore.getAll()
       },
       setAll(cookiesToSet: Array<{ name: string; value: string; options?: CookieOptions }>) {
         if (response) {
@@ -45,11 +41,9 @@ export function createServerClient({ response }: CreateServerClientOptions = {})
           return
         }
 
-        if (typeof cookieStore.set === 'function') {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set?.({ name, value, ...(options ?? {}) })
-          })
-        }
+        cookiesToSet.forEach(({ name, value, options }) => {
+          cookieStore.set(name, value, options ?? {})
+        })
       },
     },
   })

@@ -279,90 +279,149 @@ export const mockTeamSessions: TeamSession[] = [
   },
 ]
 
-export interface HashtagInfo {
-  tag: string
-  description: string
-}
-
-const HASHTAGS_BY_DAY: Record<number, HashtagInfo[]> = {
-  0: [
-    { tag: "#StretchSunday", description: "Reset with gentle mobility work before the new week kicks off." },
-    { tag: "#SelfCareSunday", description: "Recharge with recovery work and mindful downtime." },
-    { tag: "#StatsSunday", description: "Review the week, celebrate wins, and set next-week goals." },
-    { tag: "#SkillCheckSunday", description: "Spotlight the skills you want to sharpen next week." },
-    { tag: "#SetUpSunday", description: "Map out workouts and meals so you are ready to perform." },
-    { tag: "#SyncUpSunday", description: "Touch base with teammates and align on training plans." },
-    { tag: "#SteadySunday", description: "Keep things light with an easy shakeout or mobility flow." },
-  ],
-  1: [
-    { tag: "#MotivationMonday", description: "Kick off the week with a post about your big goal." },
-    { tag: "#MoveItMonday", description: "Share the drill that gets you moving with purpose." },
-    { tag: "#MindsetMonday", description: "Lock in your mental game and inspire teammates." },
-    { tag: "#MobilityMonday", description: "Show the warm-up that keeps your body ready." },
-    { tag: "#MomentumMonday", description: "Highlight the habit that keeps your momentum rolling." },
-    { tag: "#MakeItHappenMonday", description: "Document the first rep of a week full of progress." },
-    { tag: "#MuscleMonday", description: "Spotlight the strength work powering your season." },
-  ],
-  2: [
-    { tag: "#TechniqueTuesday", description: "Break down the skill you are perfecting right now." },
-    { tag: "#TrainingTuesday", description: "Walk us through your session plan from warm-up to cool-down." },
-    { tag: "#TempoTuesday", description: "Share how you are dialing in pace and rhythm." },
-    { tag: "#TeamworkTuesday", description: "Shout out a teammate or drill that builds chemistry." },
-    { tag: "#TipTuesday", description: "Drop a smart cue or coaching point other athletes can use." },
-    { tag: "#ToughnessTuesday", description: "Show how you are leveling up grit and resilience." },
-    { tag: "#ThriveTuesday", description: "Celebrate the small wins that help you thrive midweek." },
-  ],
-  3: [
-    { tag: "#WorkItWednesday", description: "Show the grind that keeps your game sharp." },
-    { tag: "#WellnessWednesday", description: "Highlight nutrition or recovery choices fueling your body." },
-    { tag: "#WorkshopWednesday", description: "Break down the cues you are drilling during practice." },
-    { tag: "#WinningWednesday", description: "Share a recent breakthrough or lesson learned." },
-    { tag: "#WorkoutWednesday", description: "Post your favorite midweek workout finisher." },
-    { tag: "#WisdomWednesday", description: "Pass along advice that keeps you grounded." },
-    { tag: "#WorkrateWednesday", description: "Spotlight the effort that separates you from the pack." },
-  ],
-  4: [
-    { tag: "#ThriveThursday", description: "Showcase how you stay energized down the stretch." },
-    { tag: "#TechniqueThursday", description: "Capture the fine details that make the skill work." },
-    { tag: "#TacticalThursday", description: "Explain the game plan or play you are locking in." },
-    { tag: "#ThrowdownThursday", description: "Share a competitive moment from training or scrimmage." },
-    { tag: "#ThankfulThursday", description: "Give props to the people supporting your grind." },
-    { tag: "#ThresholdThursday", description: "Show how you are pushing past comfort zones today." },
-    { tag: "#TrailblazeThursday", description: "Highlight a new challenge you are taking on." },
-  ],
-  5: [
-    { tag: "#FocusFriday", description: "Dial in the detail that will matter most on game day." },
-    { tag: "#FinishStrongFriday", description: "Show the effort that locks down the end of your week." },
-    { tag: "#FirstTouchFriday", description: "Share how you are elevating your control and quickness." },
-    { tag: "#FlexFriday", description: "Celebrate gains and the grind behind them." },
-    { tag: "#FilmFriday", description: "Break down a clip that taught you something new." },
-    { tag: "#FuelUpFriday", description: "Post the meals or snacks powering your performance." },
-    { tag: "#FastFeetFriday", description: "Spotlight footwork that keeps your game electric." },
-  ],
-  6: [
-    { tag: "#SkillSaturday", description: "Join the community and share your progress with today's hashtag!" },
-    { tag: "#SessionSaturday", description: "Let everyone see your favorite weekend session." },
-    { tag: "#SweatSaturday", description: "Capture the extra work that separates your game." },
-    { tag: "#ScrimmageSaturday", description: "Highlight game-speed reps with your crew." },
-    { tag: "#StrengthSaturday", description: "Post the lift or circuit powering your weekend." },
-    { tag: "#SetpieceSaturday", description: "Dial in the plays and set pieces you are mastering." },
-    { tag: "#ShowtimeSaturday", description: "Share the highlight that made today's grind worth it." },
-  ],
-}
-
-const MS_PER_DAY = 24 * 60 * 60 * 1000
-
-export function getTodaysHashtag(referenceDate: Date = new Date()): HashtagInfo {
-  const dayOfWeek = referenceDate.getDay()
-  const options = HASHTAGS_BY_DAY[dayOfWeek] ?? HASHTAGS_BY_DAY[6]
-  const startOfYear = new Date(referenceDate.getFullYear(), 0, 1)
-  const todayMidnight = new Date(referenceDate.getFullYear(), referenceDate.getMonth(), referenceDate.getDate())
-  const dayOfYear = Math.floor((todayMidnight.getTime() - startOfYear.getTime()) / MS_PER_DAY)
-  if (!options || options.length === 0) {
-    return HASHTAGS_BY_DAY[6][0]
+export interface TrainingBuddy {
+  id: string
+  name: string
+  avatar: string
+  sport: string
+  location: string
+  distance?: string
+  nextSession?: {
+    time: string
+    date: string
   }
-  const rotationIndex = ((dayOfYear % options.length) + options.length) % options.length
-  return options[rotationIndex]
+  availability: 'now' | 'today' | 'this-week'
+  matchScore?: number
+  commonSports?: string[]
 }
+
+export interface UpcomingEvent {
+  id: string
+  title: string
+  type: 'tournament' | 'camp' | 'clinic' | 'scrimmage'
+  sport: string
+  date: string
+  time: string
+  location: string
+  spotsLeft?: number
+  price?: string
+}
+
+export const mockTrainingBuddies: TrainingBuddy[] = [
+  {
+    id: "buddy1",
+    name: "Jordan Martinez",
+    avatar: "/diverse-user-avatars.png",
+    sport: "Soccer",
+    location: "Lincoln High School",
+    distance: "0.8 mi",
+    availability: "now",
+    matchScore: 92,
+    commonSports: ["Soccer", "Basketball"],
+    nextSession: {
+      date: "Today",
+      time: "4:00 PM"
+    }
+  },
+  {
+    id: "buddy2",
+    name: "Taylor Swift",
+    avatar: "/diverse-user-avatars.png",
+    sport: "Basketball",
+    location: "City Gym",
+    distance: "1.2 mi",
+    availability: "today",
+    matchScore: 85,
+    commonSports: ["Basketball", "Volleyball"],
+    nextSession: {
+      date: "Today",
+      time: "6:30 PM"
+    }
+  },
+  {
+    id: "buddy3",
+    name: "Sam Chen",
+    avatar: "/asian-athlete.png",
+    sport: "Tennis",
+    location: "Central Tennis Club",
+    distance: "2.1 mi",
+    availability: "this-week",
+    matchScore: 78,
+    commonSports: ["Tennis"],
+    nextSession: {
+      date: "Wednesday",
+      time: "5:00 PM"
+    }
+  },
+]
+
+export const mockUpcomingEvents: UpcomingEvent[] = [
+  {
+    id: "event1",
+    title: "Youth Soccer Tournament",
+    type: "tournament",
+    sport: "Soccer",
+    date: "Dec 15, 2025",
+    time: "9:00 AM",
+    location: "Lincoln High School",
+    spotsLeft: 4,
+    price: "$25"
+  },
+  {
+    id: "event2",
+    title: "Basketball Skills Camp",
+    type: "camp",
+    sport: "Basketball",
+    date: "Dec 20-22, 2025",
+    time: "10:00 AM - 3:00 PM",
+    location: "City Sports Complex",
+    spotsLeft: 12,
+    price: "$120"
+  },
+  {
+    id: "event3",
+    title: "Free Tennis Clinic",
+    type: "clinic",
+    sport: "Tennis",
+    date: "Dec 18, 2025",
+    time: "2:00 PM",
+    location: "Central Tennis Club",
+    spotsLeft: 8,
+    price: "Free"
+  },
+]
+
+export interface TrendingHashtagPost {
+  id: string
+  thumbnail: string
+  userName: string
+  userAvatar: string
+  likes: number
+}
+
+export const mockTrendingHashtagPosts: TrendingHashtagPost[] = [
+  {
+    id: "trending1",
+    thumbnail: "/soccer-player-practicing-ball-control.png",
+    userName: "Alex Chen",
+    userAvatar: "/asian-athlete.png",
+    likes: 142
+  },
+  {
+    id: "trending2",
+    thumbnail: "/basketball-player-jumping-for-dunk.png",
+    userName: "Maria Rodriguez",
+    userAvatar: "/latina-coach.png",
+    likes: 98
+  },
+  {
+    id: "trending3",
+    thumbnail: "/volleyball-player-serving-ball.png",
+    userName: "James Thompson",
+    userAvatar: "/black-athlete.png",
+    likes: 76
+  },
+]
+
 
 

@@ -22,7 +22,7 @@ type ClipLikesClient = {
 }
 
 export async function POST(request: Request, { params }: ClipLikeRouteContext) {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {

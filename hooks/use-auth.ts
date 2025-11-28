@@ -71,9 +71,16 @@ export function useAuth() {
   const supabase = useMemo(() => getSupabaseBrowserClient(), [])
   const placeholderAuthEnabled = useMemo(() => isPlaceholderAuthEnabled(), [])
   const [state, setState] = useState<AuthState>(() => {
+    const hasBrowserContext = typeof window !== 'undefined' && typeof document !== 'undefined'
+
     const placeholderActive = (() => {
       if (!placeholderAuthEnabled) {
-        return detectPlaceholderSession(false)
+        return hasBrowserContext ? detectPlaceholderSession(false) : false
+      }
+
+      if (!hasBrowserContext) {
+        // During the server render just assume placeholder auth so the UI can hydrate immediately.
+        return true
       }
 
       const detected = detectPlaceholderSession(true)
@@ -87,7 +94,7 @@ export function useAuth() {
     return {
       session: placeholderActive ? createPlaceholderSession() : null,
       profile: null,
-      isLoading: !placeholderActive,
+      isLoading: placeholderAuthEnabled ? false : !placeholderActive,
       placeholderActive,
     }
   })

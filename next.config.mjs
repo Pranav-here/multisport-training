@@ -1,6 +1,13 @@
 ﻿const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL
 
-const remotePatterns = []
+const remotePatterns = [
+  // TheSportsDB API images
+  {
+    protocol: 'https',
+    hostname: 'r2.thesportsdb.com',
+    pathname: '/images/**',
+  },
+]
 
 if (SUPABASE_URL) {
   try {

@@ -118,7 +118,7 @@ async function callGroq(payload: {
 }
 
 export async function GET(request: Request) {
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const {
     data: { session },
     error: sessionError,
@@ -142,7 +142,11 @@ export async function GET(request: Request) {
     .eq('user_id', session.user.id)
 
   if (sportsError) {
-    console.warn('[daily-challenge] could not load user sports', sportsError)
+    console.error('[daily-challenge] failed to load user sports', sportsError)
+    return NextResponse.json(
+      { error: 'Unable to load your sports preferences. Please try again or update your profile.' },
+      { status: 500 }
+    )
   }
 
   const sportsFromDb = ((sportsRows ?? []) as SupabaseSportRow[])
@@ -158,6 +162,11 @@ export async function GET(request: Request) {
   const sports: Array<{ slug: string; name: string; id?: number }> =
     sportsFromDb.length > 0 ? sportsFromDb : fallbackSports
 
+  const usingSportsFallback = sportsFromDb.length === 0
+  if (usingSportsFallback) {
+    console.warn('[daily-challenge] user has no sports configured, using fallback sports')
+  }
+
   let localDate: string
   try {
     localDate = formatLocalDate(new Date(), timeZone)
@@ -167,41 +176,44 @@ export async function GET(request: Request) {
   }
   const seed = `${session.user.id}-${localDate}`
 
+  if (!process.env.GROQ_API_KEY) {
+    console.error('[daily-challenge] GROQ_API_KEY not configured')
+    return NextResponse.json(
+      { error: 'Challenge generation service not configured. Please contact support.' },
+      { status: 503 }
+    )
+  }
+
   let generatedChallenge = null
   try {
-    if (process.env.GROQ_API_KEY) {
-      generatedChallenge = await callGroq({ sports, localDate, timeZone, seed })
-    }
+    generatedChallenge = await callGroq({ sports, localDate, timeZone, seed })
   } catch (error) {
     console.error('[daily-challenge] Groq generation failed', error)
+    return NextResponse.json(
+      { error: 'Failed to generate challenge. Please try again in a moment.' },
+      { status: 500 }
+    )
   }
 
-  let sportSlug = generatedChallenge?.sport ?? sports[0]?.slug ?? fallbackSports[0].slug
+  if (!generatedChallenge) {
+    console.error('[daily-challenge] Groq returned null challenge')
+    return NextResponse.json(
+      { error: 'Failed to generate a valid challenge. Please try again.' },
+      { status: 500 }
+    )
+  }
+
+  let sportSlug = generatedChallenge.sport
   if (!sports.some((sport) => sport.slug === sportSlug)) {
-    sportSlug = sports[0]?.slug ?? fallbackSports[0].slug
+    console.warn('[daily-challenge] Generated sport not in user sports, using first sport')
+    sportSlug = sports[0].slug
   }
 
-  const difficulty = normalizeDifficulty(generatedChallenge?.difficulty)
-  const title = generatedChallenge?.title ?? 'Focused Skill Builder'
-  const description =
-    generatedChallenge?.description ??
-    'Dial in a key skill with focused reps that translate directly to game-day execution.'
-  const instructions =
-    generatedChallenge?.instructions ??
-    chooseFallbackChallenge(sportSlug, seed)?.instructions ??
-    [
-      'Block 20 minutes for technical reps with controlled tempo.',
-      'Capture a short clip of your best execution to review later.',
-      'Log takeaways in your training notebook before midnight.',
-    ]
-
-  const fallbackDetails = generatedChallenge
-    ? null
-    : chooseFallbackChallenge(sportSlug, seed) ?? chooseFallbackChallenge(fallbackSports[0].slug, seed)
-
-  const points = generatedChallenge?.points
-    ? Math.max(40, Math.min(150, generatedChallenge.points))
-    : fallbackDetails?.points ?? 80
+  const difficulty = normalizeDifficulty(generatedChallenge.difficulty)
+  const title = generatedChallenge.title
+  const description = generatedChallenge.description
+  const instructions = generatedChallenge.instructions
+  const points = Math.max(40, Math.min(150, generatedChallenge.points))
 
   const participants = Math.round(500 + seededRandom(`${seed}-${sportSlug}-participants`) * 4500)
 
@@ -234,6 +246,12 @@ export async function GET(request: Request) {
     deadline: deadlineIso,
   }
 
-  return NextResponse.json({ challenge })
+  return NextResponse.json({
+    challenge,
+    metadata: {
+      usingSportsFallback,
+      generatedByAI: true,
+    },
+  })
 }
 

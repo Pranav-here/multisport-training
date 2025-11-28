@@ -113,16 +113,47 @@ export function useDailyChallenge(session: Session | null, options: UseDailyChal
       })
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`)
+        const errorData = (await response.json().catch(() => ({}))) as { error?: string }
+        const errorMessage = errorData.error ?? `Request failed with status ${response.status}`
+
+        if (response.status === 400) {
+          // User needs to configure sports
+          throw new Error(errorMessage)
+        } else if (response.status === 503) {
+          // Service not configured
+          throw new Error(errorMessage)
+        } else {
+          // Other server errors
+          throw new Error(errorMessage)
+        }
       }
 
-      const payload = (await response.json()) as { challenge: Challenge }
+      const payload = (await response.json()) as {
+        challenge: Challenge
+        metadata?: { usingSportsFallback?: boolean; generatedByAI?: boolean }
+      }
+
       warmStartRef.current = null
       hasFetchedRef.current = true
       setChallenge(payload.challenge)
       storeChallenge(payload.challenge)
+
+      // Show info if using fallback sports
+      if (payload.metadata?.usingSportsFallback && !isPlaceholderSession) {
+        toast({
+          title: 'Using default sports',
+          description: 'Add your sports in settings to get personalized challenges.',
+          variant: 'default',
+        })
+      }
     } catch (error) {
-      console.error('[daily-challenge] failed to load challenge', error)
+      const isAborted = error instanceof Error && error.name === 'AbortError'
+
+      if (!isAborted) {
+        console.error('[daily-challenge] failed to load challenge', error)
+      } else {
+        console.warn('[daily-challenge] request timed out after 5s, using fallback')
+      }
 
       const fallbackChallenge = acquireFallbackChallenge()
       hasFetchedRef.current = true
@@ -130,9 +161,13 @@ export function useDailyChallenge(session: Session | null, options: UseDailyChal
       storeChallenge(fallbackChallenge)
 
       if (!isPlaceholderSession) {
+        const errorMessage = isAborted
+          ? 'Request timed out. Using offline challenge.'
+          : error instanceof Error ? error.message : 'Could not load challenge'
         toast({
-          title: 'Using fallback challenge',
-          description: "Could not refresh today's challenge. Showing a backup option.",
+          title: 'Challenge unavailable',
+          description: errorMessage,
+          variant: 'destructive',
         })
       }
     } finally {

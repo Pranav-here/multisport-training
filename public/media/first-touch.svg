@@ -1,0 +1,23 @@
+<svg width="420" height="260" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="touchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <radialGradient id="touchGlow" cx="70%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.8)" />
+      <stop offset="100%" stop-color="rgba(14,165,233,0)" />
+    </radialGradient>
+  </defs>
+  <rect width="420" height="260" rx="24" fill="url(#touchGradient)" />
+  <circle cx="320" cy="80" r="110" fill="url(#touchGlow)" />
+  <g fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="6" stroke-linecap="round">
+    <path d="M120 170 C150 150 200 110 240 130" />
+    <path d="M240 130 L280 90" />
+    <path d="M240 130 L280 150" />
+  </g>
+  <circle cx="110" cy="180" r="28" fill="rgba(255,255,255,0.85)" />
+  <text x="32" y="232" fill="rgba(255,255,255,0.85)" font-size="28" font-family="Inter, sans-serif" font-weight="700">
+    First touch warmup
+  </text>
+</svg>

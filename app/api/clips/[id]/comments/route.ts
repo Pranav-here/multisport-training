@@ -30,7 +30,7 @@ type ProfileSummary = Pick<Database['public']['Tables']['profiles']['Row'], 'dis
 
 export async function GET(request: Request, context: ClipCommentsRouteContext) {
   const params = await Promise.resolve(context.params)
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const parsed = paramsSchema.safeParse(params)
 
   if (!parsed.success) {
@@ -96,7 +96,7 @@ export async function GET(request: Request, context: ClipCommentsRouteContext) {
 
 export async function POST(request: Request, context: ClipCommentsRouteContext) {
   const params = await Promise.resolve(context.params)
-  const supabase = createServerClient()
+  const supabase = await createServerClient()
   const { data: auth } = await supabase.auth.getSession()
 
   if (!auth.session) {

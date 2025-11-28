@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase-server'
 
 export async function logout() {
   try {
-    const supabase = createServerClient()
+    const supabase = await createServerClient()
     await supabase.auth.signOut()
   } catch (error) {
     console.warn('[logout] Supabase sign-out skipped', error)

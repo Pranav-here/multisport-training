@@ -3,6 +3,8 @@
  * Prevents data leaks across user accounts and provides migration support
  */
 
+import { logger } from '@/lib/log'
+
 export const SCHEMA_VERSION = "v2";
 
 /**
@@ -39,7 +41,10 @@ export function getScopedItem<T = string>(userId: string, key: string): T | null
       return item as T;
     }
   } catch (error) {
-    console.error("Error reading from scoped localStorage:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error), userId, key },
+      "Error reading from scoped localStorage"
+    );
     return null;
   }
 }
@@ -57,10 +62,17 @@ export function setScopedItem<T>(userId: string, key: string, value: T): void {
     const serialized = typeof value === "string" ? value : JSON.stringify(value);
     localStorage.setItem(scopedKey, serialized);
   } catch (error) {
-    console.error("Error writing to scoped localStorage:", error);
     // Handle quota exceeded errors gracefully
     if (error instanceof DOMException && error.name === "QuotaExceededError") {
-      console.warn("localStorage quota exceeded. Consider clearing old data.");
+      logger.warn(
+        { userId, key },
+        "localStorage quota exceeded. Consider clearing old data."
+      );
+    } else {
+      logger.error(
+        { error: error instanceof Error ? error.message : String(error), userId, key },
+        "Error writing to scoped localStorage"
+      );
     }
   }
 }
@@ -77,7 +89,10 @@ export function removeScopedItem(userId: string, key: string): void {
     const scopedKey = ns(userId, key);
     localStorage.removeItem(scopedKey);
   } catch (error) {
-    console.error("Error removing from scoped localStorage:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error), userId, key },
+      "Error removing from scoped localStorage"
+    );
   }
 }
 
@@ -105,9 +120,15 @@ export function clearUserScope(userId: string): void {
     // Remove them
     keysToRemove.forEach((key) => localStorage.removeItem(key));
 
-    console.log(`Cleared ${keysToRemove.length} scoped localStorage items for user`);
+    logger.info(
+      { userId, itemsCleared: keysToRemove.length },
+      "Cleared scoped localStorage items for user"
+    );
   } catch (error) {
-    console.error("Error clearing user scope from localStorage:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error), userId },
+      "Error clearing user scope from localStorage"
+    );
   }
 }
 
@@ -131,11 +152,14 @@ export function migrateOldKeys(userId: string, oldKeys: string[]): void {
         // Remove old key
         localStorage.removeItem(oldKey);
 
-        console.log(`Migrated localStorage key: ${oldKey} -> ${newKey}`);
+        logger.info({ userId, oldKey, newKey }, "Migrated localStorage key");
       }
     });
   } catch (error) {
-    console.error("Error migrating old localStorage keys:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error), userId },
+      "Error migrating old localStorage keys"
+    );
   }
 }
 
@@ -164,10 +188,16 @@ export function clearOldSchemas(): void {
     keysToRemove.forEach((key) => localStorage.removeItem(key));
 
     if (keysToRemove.length > 0) {
-      console.log(`Cleared ${keysToRemove.length} old schema localStorage items`);
+      logger.info(
+        { itemsCleared: keysToRemove.length },
+        "Cleared old schema localStorage items"
+      );
     }
   } catch (error) {
-    console.error("Error clearing old schemas from localStorage:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error) },
+      "Error clearing old schemas from localStorage"
+    );
   }
 }
 
@@ -196,7 +226,10 @@ export function getUserStorageSize(userId: string): number {
 
     return totalSize;
   } catch (error) {
-    console.error("Error calculating user storage size:", error);
+    logger.error(
+      { error: error instanceof Error ? error.message : String(error), userId },
+      "Error calculating user storage size"
+    );
     return 0;
   }
 }

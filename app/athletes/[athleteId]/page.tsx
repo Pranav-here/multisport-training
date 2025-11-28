@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -9,8 +10,8 @@ import { AuthGuard } from '@/components/auth-guard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getAthleteProfile } from '@/lib/athlete-profiles'
-import { ArrowLeft, Award, Play, Target } from 'lucide-react'
+import { getAthleteProfile, type AthleteProfile } from '@/lib/athlete-profiles'
+import { ArrowLeft, Award, Play, Target, Loader2 } from 'lucide-react'
 
 export default function AthleteProfilePage() {
   const params = useParams<{ athleteId?: string | string[] }>()
@@ -22,7 +23,44 @@ export default function AthleteProfilePage() {
       : Array.isArray(athleteIdParam)
         ? athleteIdParam[0]
         : ''
-  const profile = athleteId ? getAthleteProfile(athleteId) : undefined
+
+  const [profile, setProfile] = useState<AthleteProfile | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!athleteId) {
+        setIsLoading(false)
+        return
+      }
+
+      // First check local profiles
+      const localProfile = getAthleteProfile(athleteId)
+      if (localProfile) {
+        setProfile(localProfile)
+        setIsLoading(false)
+        return
+      }
+
+      // If not found locally, fetch from API
+      try {
+        const response = await fetch(`/api/athletes/${athleteId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setProfile(data.profile)
+        } else {
+          setProfile(undefined)
+        }
+      } catch (error) {
+        console.error('Error loading athlete profile:', error)
+        setProfile(undefined)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProfile()
+  }, [athleteId])
 
   return (
     <AuthGuard>
@@ -34,7 +72,13 @@ export default function AthleteProfilePage() {
             Back
           </Button>
 
-          {!profile ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </CardContent>
+            </Card>
+          ) : !profile ? (
             <Card>
               <CardHeader>
                 <CardTitle>Profile coming soon</CardTitle>
@@ -104,104 +148,114 @@ export default function AthleteProfilePage() {
                 </div>
               </section>
 
-              <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-                {profile.careerStats.map((stat) => (
-                  <Card key={stat.label} className="border-primary/10 bg-gradient-to-br from-primary/5 to-background">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm text-muted-foreground">{stat.label}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-semibold">{stat.value}</div>
-                      {stat.subtext && <p className="mt-1 text-xs text-muted-foreground">{stat.subtext}</p>}
-                    </CardContent>
-                  </Card>
-                ))}
-              </section>
-
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
-                <Card className="space-y-0">
-                  <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                        <Award className="h-5 w-5 text-sport-orange" />
-                        Career Achievements
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        The accolades that define LeBron&apos;s unmatched resume.
-                      </p>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {profile.achievements.map((achievement) => (
-                        <li key={achievement} className="flex items-start gap-3">
-                          <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
-                          <span className="text-sm">{achievement}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5 text-sport-green" />
-                      Current Focus Areas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex flex-wrap gap-2">
-                    {profile.focusAreas.map((area) => (
-                      <Badge key={area} variant="secondary" className="text-sm">
-                        {area}
-                      </Badge>
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
-
-              <section className="space-y-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="text-2xl font-semibold">Recent Highlights</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Watch how LeBron keeps the edge during the grind of the season.
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {profile.recentHighlights.map((highlight) => (
-                    <Card key={highlight.id} className="overflow-hidden">
-                      <div className="relative aspect-video bg-muted">
-                        {highlight.videoUrl ? (
-                          <video
-                            key={highlight.videoUrl}
-                            src={highlight.videoUrl}
-                            poster={highlight.thumbnail || profile.coverImage}
-                            controls
-                            preload="metadata"
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <Image
-                            src={highlight.thumbnail || profile.coverImage}
-                            alt={highlight.title}
-                            fill
-                            className="object-cover"
-                            sizes="(min-width: 1024px) 480px, 100vw"
-                          />
-                        )}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      </div>
-                      <CardHeader className="space-y-2">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          {highlight.videoUrl && <Play className="h-4 w-4 text-primary" />}
-                          {highlight.title}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground text-pretty">{highlight.description}</p>
+              {profile.careerStats && profile.careerStats.length > 0 && (
+                <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                  {profile.careerStats.map((stat) => (
+                    <Card key={stat.label} className="border-primary/10 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm text-muted-foreground">{stat.label}</CardTitle>
                       </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-semibold">{stat.value}</div>
+                        {stat.subtext && <p className="mt-1 text-xs text-muted-foreground">{stat.subtext}</p>}
+                      </CardContent>
                     </Card>
                   ))}
+                </section>
+              )}
+
+              {((profile.achievements && profile.achievements.length > 0) || (profile.focusAreas && profile.focusAreas.length > 0)) && (
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.6fr_1fr]">
+                  {profile.achievements && profile.achievements.length > 0 && (
+                    <Card className="space-y-0">
+                      <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            <Award className="h-5 w-5 text-sport-orange" />
+                            Career Info
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            Details about {profile.name}.
+                          </p>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-3">
+                          {profile.achievements.map((achievement, idx) => (
+                            <li key={idx} className="flex items-start gap-3">
+                              <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+                              <span className="text-sm">{achievement}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {profile.focusAreas && profile.focusAreas.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Target className="h-5 w-5 text-sport-green" />
+                          Sport & Position
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex flex-wrap gap-2">
+                        {profile.focusAreas.map((area, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-sm">
+                            {area}
+                          </Badge>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-              </section>
+              )}
+
+              {profile.recentHighlights && profile.recentHighlights.length > 0 && (
+                <section className="space-y-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <h2 className="text-2xl font-semibold">Recent Highlights</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Recent moments from {profile.name}&apos;s career.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    {profile.recentHighlights.map((highlight) => (
+                      <Card key={highlight.id} className="overflow-hidden">
+                        <div className="relative aspect-video bg-muted">
+                          {highlight.videoUrl ? (
+                            <video
+                              key={highlight.videoUrl}
+                              src={highlight.videoUrl}
+                              poster={highlight.thumbnail || profile.coverImage}
+                              controls
+                              preload="metadata"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <Image
+                              src={highlight.thumbnail || profile.coverImage}
+                              alt={highlight.title}
+                              fill
+                              className="object-cover"
+                              sizes="(min-width: 1024px) 480px, 100vw"
+                            />
+                          )}
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        </div>
+                        <CardHeader className="space-y-2">
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            {highlight.videoUrl && <Play className="h-4 w-4 text-primary" />}
+                            {highlight.title}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground text-pretty">{highlight.description}</p>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
             </>
           )}
         </main>

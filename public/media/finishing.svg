@@ -1,0 +1,23 @@
+<svg width="420" height="260" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="finishGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#facc15" />
+    </linearGradient>
+    <radialGradient id="finishGlow" cx="30%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.75)" />
+      <stop offset="100%" stop-color="rgba(56,189,248,0)" />
+    </radialGradient>
+  </defs>
+  <rect width="420" height="260" rx="24" fill="url(#finishGradient)" />
+  <circle cx="140" cy="110" r="110" fill="url(#finishGlow)" />
+  <g fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="6" stroke-linecap="round">
+    <path d="M90 200 Q220 150 320 90" />
+    <path d="M320 90 L350 130" />
+    <path d="M320 90 L360 60" />
+  </g>
+  <circle cx="90" cy="200" r="26" fill="rgba(255,255,255,0.9)" />
+  <text x="32" y="232" fill="rgba(255,255,255,0.9)" font-size="28" font-family="Inter, sans-serif" font-weight="700">
+    Clinical finishing
+  </text>
+</svg>

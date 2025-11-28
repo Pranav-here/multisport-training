@@ -23,7 +23,7 @@ export async function GET(request: Request) {
   }
 
   const response = NextResponse.redirect(new URL('/dashboard', request.url))
-  const supabase = createServerClient({ response })
+  const supabase = await createServerClient({ response })
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
   if (exchangeError) {
@@ -41,18 +41,40 @@ export async function GET(request: Request) {
   let destination = fallbackRedirect
 
   if (user) {
+    // Check if user has completed onboarding
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, display_name, username, onboarding_completed')
       .eq('id', user.id)
-      .maybeSingle<{ id: string }>()
+      .maybeSingle()
 
     if (profileError) {
       console.error('[api/auth/callback] profile lookup', profileError)
     }
 
-    if (!profileError) {
-      destination = profile?.id ? destination : '/onboarding'
+    // Check if user has any sports configured
+    const { data: userSports, error: sportsError } = await supabase
+      .from('user_sports')
+      .select('id')
+      .eq('user_id', user.id)
+      .limit(1)
+
+    if (sportsError) {
+      console.error('[api/auth/callback] user_sports lookup', sportsError)
+    }
+
+    // Redirect to onboarding if:
+    // 1. No profile exists, OR
+    // 2. Profile exists but no display name/username, OR
+    // 3. No sports configured
+    const needsOnboarding =
+      !profile ||
+      (!profile.display_name && !profile.username) ||
+      !userSports ||
+      userSports.length === 0
+
+    if (needsOnboarding) {
+      destination = '/onboarding'
     }
   } else {
     destination = '/login?error=auth'

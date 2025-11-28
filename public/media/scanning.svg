@@ -1,0 +1,23 @@
+<svg width="420" height="260" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="scanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <radialGradient id="scanGlow" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.6)" />
+      <stop offset="100%" stop-color="rgba(99,102,241,0)" />
+    </radialGradient>
+  </defs>
+  <rect width="420" height="260" rx="24" fill="url(#scanGradient)" />
+  <circle cx="180" cy="110" r="120" fill="url(#scanGlow)" />
+  <g fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="6">
+    <path d="M70 80 L210 80 L260 40" stroke-linecap="round" />
+    <path d="M70 160 L210 160 L260 200" stroke-linecap="round" />
+    <circle cx="290" cy="120" r="28" />
+    <line x1="290" y1="120" x2="350" y2="120" stroke-linecap="round" />
+  </g>
+  <text x="32" y="232" fill="rgba(255,255,255,0.85)" font-size="28" font-family="Inter, sans-serif" font-weight="700">
+    Scan & decide
+  </text>
+</svg>

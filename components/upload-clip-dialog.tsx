@@ -15,12 +15,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { PostDestinationSelector } from '@/components/post-destination-selector'
+import { ContentTagSelector } from '@/components/content-tag-selector'
 import { useToast } from '@/hooks/use-toast'
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser'
 import type { ClipApiResponse } from '@/lib/clips'
 import type { ApiResponse } from '@/lib/api-response'
+import type { PostDestination, ContentTag } from '@/lib/discovery/types'
 
 const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024
+const MAX_CAPTION_LENGTH = 500
+const MIN_VIDEO_DURATION_SECONDS = 1
+const MAX_VIDEO_DURATION_SECONDS = 300 // 5 minutes
 
 const ACCEPTED_MIME_TYPES = new Set([
   'video/mp4',
@@ -112,6 +119,8 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
   const [file, setFile] = useState<File | null>(null)
   const [filePreview, setFilePreview] = useState<string | null>(null)
   const [caption, setCaption] = useState('')
+  const [postDestination, setPostDestination] = useState<PostDestination>('training_only')
+  const [contentTags, setContentTags] = useState<ContentTag[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [phase, setPhase] = useState<UploadProgressPhase>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -179,6 +188,8 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
     }
     setFilePreview(null)
     setCaption('')
+    setPostDestination('training_only')
+    setContentTags([])
     setPhase('idle')
     setIsSubmitting(false)
     setErrorMessage(null)
@@ -249,13 +260,34 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
       setErrorMessage('Select a sport so we can tag your clip.')
       return
     }
+    if (caption.trim().length > MAX_CAPTION_LENGTH) {
+      setErrorMessage(`Caption must be ${MAX_CAPTION_LENGTH} characters or less.`)
+      return
+    }
 
     setIsSubmitting(true)
     setPhase('preparing')
     setErrorMessage(null)
 
     try {
-      const metadataPromise = extractVideoMetadata(file)
+      // Extract and validate video metadata
+      const metadata = await extractVideoMetadata(file)
+
+      if (metadata.durationSeconds !== null) {
+        if (metadata.durationSeconds < MIN_VIDEO_DURATION_SECONDS) {
+          setErrorMessage('Video is too short. Please upload a video at least 1 second long.')
+          setIsSubmitting(false)
+          setPhase('idle')
+          return
+        }
+        if (metadata.durationSeconds > MAX_VIDEO_DURATION_SECONDS) {
+          setErrorMessage(`Video is too long. Please upload a video under ${MAX_VIDEO_DURATION_SECONDS / 60} minutes.`)
+          setIsSubmitting(false)
+          setPhase('idle')
+          return
+        }
+      }
+
       const signedUrlResponse = await fetch('/api/upload/create-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -283,8 +315,6 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
       if (!uploadResponse.ok) {
         throw new Error('Failed to upload clip to storage. Please try again.')
       }
-
-      const metadata = await metadataPromise
 
       setPhase('saving')
 
@@ -418,6 +448,22 @@ export function UploadClipDialog({ open, onOpenChange, onUploaded }: UploadClipD
               {caption.length}/500 characters
             </p>
           </div>
+
+          <Separator className="my-4" />
+
+          <PostDestinationSelector
+            value={postDestination}
+            onChange={setPostDestination}
+            suggestDiscovery={contentTags.length > 0}
+          />
+
+          {(postDestination === 'discovery_only' || postDestination === 'both') && (
+            <ContentTagSelector
+              selectedTags={contentTags}
+              onChange={setContentTags}
+              maxTags={3}
+            />
+          )}
 
           {errorMessage && (
             <p className="text-sm text-destructive" role="alert">

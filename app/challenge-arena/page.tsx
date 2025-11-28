@@ -1,24 +1,22 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, CheckCircle2, Flame, Trophy, Users, Video } from 'lucide-react'
 
-import { AuthGuard } from '@/components/auth-guard'
 import { Header } from '@/components/header'
 import { MobileNav } from '@/components/mobile-nav'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { useAuth } from '@/hooks/use-auth'
-import { useDailyChallenge, DAILY_CHALLENGE_STORAGE_KEY } from '@/hooks/use-daily-challenge'
 import { useCountdown } from '@/hooks/use-countdown'
 import { useToast } from '@/hooks/use-toast'
 import type { Challenge } from '@/lib/mock-data'
 
 const COMPLETION_STORAGE_KEY = 'athletiqs-challenge-completions'
 const COMPLETION_EVENT = 'athletiqs-challenge-completions-updated'
+const DAILY_CHALLENGE_STORAGE_KEY = 'athletiqs-current-challenge'
 
 interface CompletionRecord {
   date: string
@@ -97,14 +95,40 @@ function computeStreak(records: CompletionRecord[]) {
   return streak
 }
 
+function loadStoredChallenge(): Challenge | null {
+  if (typeof window === 'undefined') {
+    return null
+  }
+  const cached = window.sessionStorage.getItem(DAILY_CHALLENGE_STORAGE_KEY)
+  if (!cached) {
+    return null
+  }
+  try {
+    return JSON.parse(cached) as Challenge
+  } catch {
+    window.sessionStorage.removeItem(DAILY_CHALLENGE_STORAGE_KEY)
+    return null
+  }
+}
+
 export default function ChallengeArenaPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { session, isPlaceholder } = useAuth()
-  const { challenge, loading } = useDailyChallenge(session, { isPlaceholderSession: isPlaceholder })
-  const countdown = useCountdown(challenge?.deadline)
+  const [challenge, setChallenge] = useState<Challenge | null>(null)
+  const [loading, setLoading] = useState(true)
+  const countdown = useCountdown(challenge?.deadline || '')
   const [proofNote, setProofNote] = useState('')
   const [records, setRecords] = useState<CompletionRecord[]>(() => loadCompletionRecords())
+
+  useEffect(() => {
+    const stored = loadStoredChallenge()
+    setChallenge(stored)
+    setLoading(false)
+
+    if (!stored) {
+      router.push('/dashboard')
+    }
+  }, [router])
 
   const todayKey = formatIsoDate(new Date())
   const challengeCompletions = useMemo(() => {
@@ -167,31 +191,12 @@ export default function ChallengeArenaPage() {
     })
   }, [toast])
 
-  const storedChallenge = useMemo(() => {
-    if (challenge) {
-      return challenge
-    }
-    if (typeof window === 'undefined') {
-      return null
-    }
-    const cached = window.sessionStorage.getItem(DAILY_CHALLENGE_STORAGE_KEY)
-    if (!cached) {
-      return null
-    }
-    try {
-      return JSON.parse(cached) as Challenge
-    } catch {
-      window.sessionStorage.removeItem(DAILY_CHALLENGE_STORAGE_KEY)
-      return null
-    }
-  }, [challenge])
-
-  const activeChallenge = storedChallenge
+  const activeChallenge = challenge
 
   return (
-    <AuthGuard>
       <div className='min-h-screen bg-background'>
         <Header />
+
 
         <main className='container mx-auto px-4 py-6 space-y-6'>
           <div className='flex flex-wrap items-center justify-between gap-3'>
@@ -420,6 +425,5 @@ export default function ChallengeArenaPage() {
 
         <MobileNav />
       </div>
-    </AuthGuard>
   )
 }

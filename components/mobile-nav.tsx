@@ -2,29 +2,29 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Dumbbell, Trophy, Users, User } from "lucide-react"
+import { Home, Dumbbell, Trophy, Sparkles, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   {
-    href: "/dashboard",
-    label: "Top posts today",
+    href: "/discovery",
+    label: "Discover",
     icon: Home,
   },
   {
-    href: "/drills",
-    label: "Drills",
+    href: "/training",
+    label: "Training",
     icon: Dumbbell,
+  },
+  {
+    href: "/challenge-arena",
+    label: "Challenges",
+    icon: Trophy,
   },
   {
     href: "/leaderboards",
     label: "Leaderboards",
-    icon: Trophy,
-  },
-  {
-    href: "/teams",
-    label: "Teams",
-    icon: Users,
+    icon: Sparkles,
   },
   {
     href: "/profile",
