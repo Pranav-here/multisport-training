@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion"
 import { BrandWordmark } from "@/components/brand-wordmark"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -98,18 +99,6 @@ const features = [
       "Personalised recovery recommendations and prehab playlists",
     ],
   },
-  {
-    icon: MessageCircle,
-    title: "Personal Messages (Coming Soon)",
-    description: "Direct messaging will let you coordinate sessions and share feedback without leaving AthletIQs.",
-    details:
-      "We're putting the finishing touches on private threads so athletes, coaches, and parents can sync plans, react to clips, and keep sensitive updates in one secure place. Join now to be first in line.",
-    highlights: [
-      "1:1 and small group threads with delivery receipts",
-      "Attach clips, challenges, and session plans directly inside a message",
-      "Coach nudges and reminders arrive as gentle DM notifications",
-    ],
-  },
 ]
 
 const testimonials = [
@@ -155,7 +144,7 @@ const steps = [
   {
     number: "04",
     title: "Compete & Connect",
-    description: "Join local leaderboards, connect with athletes from your school or club, and get ready for upcoming private messaging.",
+    description: "Join local leaderboards, message teammates directly, and compete with athletes from your school or club.",
   },
   {
     number: "05",
@@ -244,6 +233,16 @@ export default function RootPage() {
   const [testiHover, setTestiHover] = useState(false)
   const [scoreIndex, setScoreIndex] = useState(0)
   const [selectedFeature, setSelectedFeature] = useState<number | null>(null)
+
+  const heroRef = useRef(null)
+  const featuresRef = useRef(null)
+  const testimonialsRef = useRef(null)
+  const stepsRef = useRef(null)
+
+  const heroInView = useInView(heroRef, { once: true, amount: 0.2 })
+  const featuresInView = useInView(featuresRef, { once: true, amount: 0.1 })
+  const testimonialsInView = useInView(testimonialsRef, { once: true, amount: 0.2 })
+  const stepsInView = useInView(stepsRef, { once: true, amount: 0.1 })
 
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
@@ -375,59 +374,88 @@ export default function RootPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section ref={heroRef} className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-background/80 to-muted" />
           <div className="absolute -top-40 -left-20 h-72 w-72 rounded-full bg-gradient-to-br from-sport-blue/40 via-sport-green/20 to-transparent blur-3xl opacity-70 animate-pulse" />
-          <div className="absolute -bottom-32 -right-24 h-80 w-80 rounded-full bg-gradient-to-br from-sport-orange/40 via-sport-blue/20 to-transparent blur-[120px] opacity-70 animate-[spin_18s_linear_infinite]" />
+          <div className="absolute -bottom-32 -right-24 h-80 w-80 rounded-full bg-gradient-to-br from-sport-orange/40 via-sport-blue/20 to-transparent blur-[120px] opacity-70" />
           <div className="absolute top-1/2 left-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-white/5 opacity-25 blur-3xl" />
         </div>
 
         <div className="relative container px-4 py-24">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="mx-auto max-w-3xl text-center md:text-left lg:mx-0">
-              <h1 className="mt-6 text-4xl md:text-6xl font-bold leading-[1.18] md:leading-[1.12] tracking-tight text-balance">
+            <motion.div
+              className="mx-auto max-w-3xl text-center md:text-left lg:mx-0"
+              initial={{ opacity: 0, y: 30 }}
+              animate={heroInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.h1
+                className="mt-6 text-4xl md:text-6xl font-bold leading-[1.18] md:leading-[1.12] tracking-tight text-balance"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
                 Train smarter across{" "}
                 <span className="bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange bg-clip-text text-transparent">
                   every sport
                 </span>
-                <span className="mt-4 block text-3xl md:text-4xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-sport-orange via-sport-green to-sport-blue leading-tight md:leading-snug pb-1">
+                <motion.span
+                  className="mt-4 block text-3xl md:text-4xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-sport-orange via-sport-green to-sport-blue leading-tight md:leading-snug pb-1"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={heroInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
                   {heroSecondaryText}
-                </span>
-              </h1>
-              <p className="mt-6 text-xl text-muted-foreground text-balance md:max-w-2xl">
+                </motion.span>
+              </motion.h1>
+              <motion.p
+                className="mt-6 text-xl text-muted-foreground text-balance md:max-w-2xl"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
                 The all-in-one platform for multi-sport athletes to track progress, compete with friends, and train with
                 purpose across all your favorite sports.
-              </p>
-              <div className="mt-6 inline-flex items-center justify-center gap-3 rounded-full border border-sport-blue/40 bg-sport-blue/10 px-5 py-2 text-sm text-sport-blue md:justify-start">
-                <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                <span>Personal messages launch soon; be among the first to try one-on-one DMs.</span>
-              </div>
-              <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:justify-start">
+              </motion.p>
+              <motion.div
+                className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center md:justify-start"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 0.8 }}
+              >
                 <Link href="/onboarding" onClick={activatePlaceholderAccess}>
-                  <Button
-                    size="lg"
-                    className="group relative overflow-hidden rounded-full text-lg px-8 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    aria-label="Get Started Free"
-                  >
-                    <span className="relative z-10 flex items-center gap-2">
-                      Get Started Free
-                      <span className="inline-flex h-2 w-2 rounded-full bg-sport-green transition-transform duration-200 group-hover:scale-150" />
-                    </span>
-                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      size="lg"
+                      className="group relative overflow-hidden rounded-full text-lg px-8 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      aria-label="Get Started Free"
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        Get Started Free
+                        <motion.span
+                          className="inline-flex h-2 w-2 rounded-full bg-sport-green"
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      </span>
+                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
+                    </Button>
+                  </motion.div>
                 </Link>
                 <Link href="/onboarding" onClick={activatePlaceholderAccess} className="rounded-full">
-                  <Button
-                    variant="ghost"
-                    size="lg"
-                    className="rounded-full border border-white/40 bg-white/10 px-8 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    aria-label="Log In"
-                  >
-                    Log In
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="ghost"
+                      size="lg"
+                      className="rounded-full border border-white/40 bg-white/10 px-8 transition-all duration-200 hover:bg-white/20 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                      aria-label="Log In"
+                    >
+                      Log In
+                    </Button>
+                  </motion.div>
                 </Link>
-              </div>
+              </motion.div>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-2 md:hidden">
                 <Link href="/about">
                   <Button variant="ghost" size="sm" className="rounded-full border border-white/20 bg-white/10 px-4 text-sm">
@@ -445,19 +473,41 @@ export default function RootPage() {
                   </Button>
                 </Link>
               </div>
-              <div className="mt-12 grid w-full gap-4 sm:grid-cols-3">
-                {heroStats.map((stat) => (
-                  <div
+              <motion.div
+                className="mt-12 grid w-full gap-4 sm:grid-cols-3"
+                initial={{ opacity: 0, y: 30 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.8, delay: 1 }}
+              >
+                {heroStats.map((stat, index) => (
+                  <motion.div
                     key={stat.label}
-                    className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-5 py-6 text-left backdrop-blur transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_18px_35px_rgba(2,6,23,0.25)]"
+                    className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-5 py-6 text-left backdrop-blur transition-all duration-200 hover:-translate-y-1.5 hover:shadow-[0_18px_35px_rgba(2,6,23,0.25)] cursor-pointer"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 0.6, delay: 1 + index * 0.1 }}
                   >
                     <div className={`absolute inset-0 -z-10 bg-gradient-to-br ${stat.accent} opacity-60 transition-opacity duration-200 group-hover:opacity-100`} />
-                    <p className="text-xs uppercase tracking-[0.35em] text-foreground/70">{stat.label}</p>
-                    <p className="mt-3 text-3xl font-semibold text-foreground">{stat.value}</p>
+                    <motion.p
+                      className="text-xs uppercase tracking-[0.35em] text-foreground/70"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1.2 + index * 0.1 }}
+                    >
+                      {stat.label}
+                    </motion.p>
+                    <motion.p
+                      className="mt-3 text-3xl font-semibold text-foreground"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={heroInView ? { scale: 1, opacity: 1 } : {}}
+                      transition={{ duration: 0.5, delay: 1.3 + index * 0.1, type: "spring" }}
+                    >
+                      {stat.value}
+                    </motion.p>
                     <p className="mt-2 text-sm text-foreground/70">{stat.change}</p>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
               <div className="mt-10 w-full lg:hidden">
                 <Card className="relative overflow-hidden border-0 bg-white/10 text-foreground shadow-[0_12px_28px_rgba(15,23,42,0.25)] backdrop-blur">
                   <span className="absolute inset-0 bg-gradient-to-br from-sport-blue/20 via-sport-green/10 to-sport-orange/20 opacity-90" />
@@ -502,7 +552,7 @@ export default function RootPage() {
                   </CardContent>
                 </Card>
               </div>
-            </div>
+            </motion.div>
             <div className="hidden lg:flex lg:flex-col lg:justify-center">
               <Card className="relative overflow-hidden rounded-3xl border-0 bg-white/10 text-left text-foreground shadow-[0_25px_60px_rgba(15,23,42,0.25)] backdrop-blur">
                 <span className="absolute inset-0 bg-gradient-to-br from-sport-blue/25 via-sport-green/15 to-sport-orange/20 opacity-90" />
@@ -639,51 +689,101 @@ export default function RootPage() {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="relative overflow-hidden py-28">
+      <section ref={featuresRef} id="features" className="relative overflow-hidden py-28">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/50 to-background" />
         <div className="absolute -top-32 left-12 h-72 w-72 rounded-full bg-gradient-to-br from-sport-blue/25 to-transparent blur-3xl opacity-70" />
         <div className="absolute bottom-0 right-12 h-64 w-64 rounded-full bg-gradient-to-br from-sport-orange/20 to-transparent blur-3xl opacity-60" />
         <div className="container relative px-4">
-          <div className="mx-auto mb-16 max-w-4xl text-center">
-            <span className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.4em] text-foreground/70 backdrop-blur">
+          <motion.div
+            className="mx-auto mb-16 max-w-4xl text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.span
+              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.4em] text-foreground/70 backdrop-blur"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={featuresInView ? { scale: 1, opacity: 1 } : {}}
+              transition={{ duration: 0.5 }}
+            >
               Feature deck
-            </span>
-            <h2 className="mt-6 text-3xl md:text-4xl font-bold">Everything you need to excel</h2>
-            <p className="mt-4 text-xl text-muted-foreground text-balance">
+            </motion.span>
+            <motion.h2
+              className="mt-6 text-3xl md:text-4xl font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Everything you need to excel
+            </motion.h2>
+            <motion.p
+              className="mt-4 text-xl text-muted-foreground text-balance"
+              initial={{ opacity: 0 }}
+              animate={featuresInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
               Comprehensive tools designed specifically for multi-sport athletes who want to train smarter, not harder.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => {
               const Icon = feature.icon
               return (
-                <div
+                <motion.div
                   key={index}
-                  className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-[1px] transition-all duration-300 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-[0_20px_45px_rgba(15,23,42,0.2)]"
+                  className="group relative overflow-hidden rounded-2xl border border-white/15 bg-white/5 p-[1px] transition-all duration-300 hover:shadow-[0_20px_45px_rgba(15,23,42,0.2)] cursor-pointer"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={featuresInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{
+                    y: -8,
+                    scale: 1.02,
+                    transition: { duration: 0.2 },
+                  }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-sport-blue/20 via-transparent to-sport-green/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-br from-sport-blue/20 via-transparent to-sport-green/20 opacity-0 group-hover:opacity-100"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
                   <Card className="relative h-full border-0 bg-background/80 backdrop-blur-xl">
                     <CardContent className="relative z-10 space-y-4 p-6">
                       <div className="flex items-start justify-between">
-                        <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue/15 to-sport-green/15 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 group-hover:rotate-3">
+                        <motion.div
+                          className="h-12 w-12 rounded-lg bg-gradient-to-br from-sport-blue/15 to-sport-green/15 flex items-center justify-center"
+                          whileHover={{
+                            scale: 1.1,
+                            rotate: 5,
+                            transition: { duration: 0.2 },
+                          }}
+                        >
                           <Icon className="h-6 w-6 text-sport-blue" />
-                        </div>
-                        <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground/80">#{index + 1}</span>
+                        </motion.div>
+                        <motion.span
+                          className="text-xs uppercase tracking-[0.3em] text-muted-foreground/80"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={featuresInView ? { opacity: 1, x: 0 } : {}}
+                          transition={{ delay: 0.3 + index * 0.1 }}
+                        >
+                          #{index + 1}
+                        </motion.span>
                       </div>
                       <h3 className="text-xl font-semibold">{feature.title}</h3>
                       <p className="text-muted-foreground text-balance">{feature.description}</p>
-                      <button
+                      <motion.button
                         type="button"
                         onClick={() => setSelectedFeature(index)}
                         className="inline-flex items-center gap-2 text-sm font-semibold text-sport-green opacity-0 transition-opacity duration-300 hover:text-sport-green/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 group-hover:opacity-100"
                         aria-label={`Explore more about ${feature.title}`}
+                        whileHover={{ x: 5 }}
                       >
                         Explore more
                         <ChevronRight className="h-4 w-4" />
-                      </button>
+                      </motion.button>
                     </CardContent>
                   </Card>
-                </div>
+                </motion.div>
               )
             })}
           </div>
@@ -691,16 +791,40 @@ export default function RootPage() {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="relative overflow-hidden py-24">
+      <section ref={testimonialsRef} id="testimonials" className="relative overflow-hidden py-24">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-background via-muted/40 to-background" />
         <div className="absolute -top-24 left-16 h-60 w-60 rounded-full bg-gradient-to-tr from-sport-blue/20 to-transparent blur-3xl opacity-60" />
         <div className="absolute bottom-0 right-24 h-56 w-56 rounded-full bg-gradient-to-tr from-sport-orange/25 to-transparent blur-3xl opacity-60" />
         <div className="container relative px-4">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Loved by athletes everywhere</h2>
-            <p className="text-xl text-muted-foreground">See what coaches and athletes are saying about AthletIQs</p>
-          </div>
-          <div className="mx-auto max-w-4xl">
+          <motion.div
+            className="mx-auto mb-16 max-w-3xl text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={testimonialsInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6 }}
+            >
+              Loved by athletes everywhere
+            </motion.h2>
+            <motion.p
+              className="text-xl text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={testimonialsInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              See what coaches and athletes are saying about AthletIQs
+            </motion.p>
+          </motion.div>
+          <motion.div
+            className="mx-auto max-w-4xl"
+            initial={{ opacity: 0, y: 50 }}
+            animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
             <Card
               className="relative overflow-hidden border border-white/10 bg-white/5 shadow-[0_18px_45px_rgba(15,23,42,0.2)] backdrop-blur-xl transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_25px_55px_rgba(15,23,42,0.24)]"
               onMouseEnter={() => setTestiHover(true)}
@@ -708,105 +832,189 @@ export default function RootPage() {
             >
               <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange" />
               <CardContent className="relative z-10 space-y-6 p-10 text-center">
-                <blockquote
-                  className="text-xl md:text-2xl font-medium text-balance text-foreground/90 transition-opacity duration-300"
-                  aria-live="polite"
-                >
-                  &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
-                </blockquote>
-                <div className="flex items-center justify-center gap-4">
-                  <Avatar className="h-14 w-14 ring-2 ring-transparent transition-all duration-300 hover:ring-sport-blue/40">
-                    <AvatarImage
-                      src={testimonials[currentTestimonial].avatar || "/placeholder.svg"}
-                      alt={`${testimonials[currentTestimonial].name} avatar`}
-                    />
-                    <AvatarFallback>
-                      {testimonials[currentTestimonial].name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-left">
-                    <div className="text-sm uppercase tracking-[0.4em] text-muted-foreground/80">Featured voice</div>
-                    <div className="mt-1 text-lg font-semibold">{testimonials[currentTestimonial].name}</div>
-                    <div className="text-sm text-muted-foreground">{testimonials[currentTestimonial].role}</div>
-                  </div>
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.blockquote
+                    key={currentTestimonial}
+                    className="text-xl md:text-2xl font-medium text-balance text-foreground/90"
+                    aria-live="polite"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
+                  </motion.blockquote>
+                </AnimatePresence>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`author-${currentTestimonial}`}
+                    className="flex items-center justify-center gap-4"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <motion.div whileHover={{ scale: 1.1, rotate: 5 }}>
+                      <Avatar className="h-14 w-14 ring-2 ring-transparent transition-all duration-300 hover:ring-sport-blue/40">
+                        <AvatarImage
+                          src={testimonials[currentTestimonial].avatar || "/placeholder.svg"}
+                          alt={`${testimonials[currentTestimonial].name} avatar`}
+                        />
+                        <AvatarFallback>
+                          {testimonials[currentTestimonial].name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
+                    <div className="text-left">
+                      <div className="text-sm uppercase tracking-[0.4em] text-muted-foreground/80">Featured voice</div>
+                      <div className="mt-1 text-lg font-semibold">{testimonials[currentTestimonial].name}</div>
+                      <div className="text-sm text-muted-foreground">{testimonials[currentTestimonial].role}</div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               </CardContent>
             </Card>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={prevTestimonial}
-                className="rounded-full border-white/40 bg-white/10 transition-transform duration-150 hover:-translate-x-0.5 hover:bg-white/20"
-                aria-label="Previous testimonial"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
+            <motion.div
+              className="mt-10 flex items-center justify-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={testimonialsInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
+              <motion.div whileHover={{ scale: 1.1, x: -3 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={prevTestimonial}
+                  className="rounded-full border-white/40 bg-white/10 transition-colors duration-150 hover:bg-white/20"
+                  aria-label="Previous testimonial"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </motion.div>
               <div className="flex items-center gap-2">
                 {testimonials.map((_, index) => (
-                  <button
+                  <motion.button
                     key={index}
                     className={`h-2.5 w-2.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                       index === currentTestimonial
-                        ? "scale-125 bg-sport-blue"
+                        ? "bg-sport-blue"
                         : "bg-muted hover:bg-muted-foreground/50"
                     }`}
                     onClick={() => setCurrentTestimonial(index)}
                     aria-label={`Show testimonial ${index + 1}`}
+                    animate={{
+                      scale: index === currentTestimonial ? 1.25 : 1,
+                    }}
+                    whileHover={{ scale: 1.4 }}
+                    whileTap={{ scale: 0.9 }}
                   />
                 ))}
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={nextTestimonial}
-                className="rounded-full border-white/40 bg-white/10 transition-transform duration-150 hover:translate-x-0.5 hover:bg-white/20"
-                aria-label="Next testimonial"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+              <motion.div whileHover={{ scale: 1.1, x: 3 }} whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={nextTestimonial}
+                  className="rounded-full border-white/40 bg-white/10 transition-colors duration-150 hover:bg-white/20"
+                  aria-label="Next testimonial"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* How it Works */}
-      <section id="how-it-works" className="relative overflow-hidden py-24 bg-gradient-to-b from-muted/40 via-background to-muted/30">
+      <section ref={stepsRef} id="how-it-works" className="relative overflow-hidden py-24 bg-gradient-to-b from-muted/40 via-background to-muted/30">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(37,99,235,0.08),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_0%,rgba(249,115,22,0.08),transparent_65%)]" />
         </div>
         <div className="container relative px-4">
-          <div className="mx-auto mb-16 max-w-3xl text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How it works</h2>
-            <p className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
+          <motion.div
+            className="mx-auto mb-16 max-w-3xl text-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={stepsInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.h2
+              className="text-3xl md:text-4xl font-bold mb-4"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={stepsInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.6 }}
+            >
+              How it works
+            </motion.h2>
+            <motion.p
+              className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              animate={stepsInView ? { opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
               Get started in minutes and begin your journey to becoming a better multi-sport athlete.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
           <div className="relative mx-auto max-w-4xl">
-            <div className="absolute left-7 top-0 bottom-0 hidden md:block">
+            <motion.div
+              className="absolute left-7 top-0 bottom-0 hidden md:block"
+              initial={{ scaleY: 0, originY: 0 }}
+              animate={stepsInView ? { scaleY: 1 } : {}}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+            >
               <div className="h-full w-px bg-gradient-to-b from-sport-blue/40 via-sport-green/40 to-sport-orange/40" />
-            </div>
+            </motion.div>
             <div className="space-y-8">
               {steps.map((step, index) => (
-                <div
+                <motion.div
                   key={index}
-                  className="group relative flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 pl-6 backdrop-blur transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_18px_32px_rgba(15,23,42,0.2)] md:flex-row md:items-center md:gap-10 md:pl-16"
+                  className="group relative flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 pl-6 backdrop-blur transition-all duration-300 hover:shadow-[0_18px_32px_rgba(15,23,42,0.2)] md:flex-row md:items-center md:gap-10 md:pl-16 cursor-pointer"
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={stepsInView ? { opacity: 1, x: 0 } : {}}
+                  transition={{ duration: 0.6, delay: index * 0.15 }}
+                  whileHover={{
+                    y: -4,
+                    scale: 1.02,
+                    transition: { duration: 0.2 },
+                  }}
                 >
-                  <div className="absolute left-5 top-6 hidden h-3 w-3 rounded-full bg-gradient-to-br from-sport-blue to-sport-green shadow-[0_0_0_6px_rgba(255,255,255,0.12)] md:block" />
+                  <motion.div
+                    className="absolute left-5 top-6 hidden h-3 w-3 rounded-full bg-gradient-to-br from-sport-blue to-sport-green shadow-[0_0_0_6px_rgba(255,255,255,0.12)] md:block"
+                    initial={{ scale: 0 }}
+                    animate={stepsInView ? { scale: 1 } : {}}
+                    transition={{ duration: 0.4, delay: 0.6 + index * 0.15, type: "spring" }}
+                    whileHover={{
+                      scale: 1.5,
+                      boxShadow: "0 0 0 10px rgba(255,255,255,0.2)",
+                    }}
+                  />
                   <div className="md:min-w-[120px]">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sport-blue to-sport-green text-white font-bold text-sm shadow-lg">
+                    <motion.div
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-sport-blue to-sport-green text-white font-bold text-sm shadow-lg"
+                      whileHover={{
+                        scale: 1.15,
+                        rotate: 360,
+                        transition: { duration: 0.6 },
+                      }}
+                    >
                       {step.number}
-                    </div>
+                    </motion.div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold group-hover:text-foreground">{step.title}</h3>
+                    <motion.h3
+                      className="text-xl font-semibold"
+                      whileHover={{ x: 5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {step.title}
+                    </motion.h3>
                     <p className="mt-2 text-muted-foreground text-balance">{step.description}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -818,40 +1026,91 @@ export default function RootPage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-sport-blue/15 via-sport-green/10 to-sport-orange/15" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_30%,rgba(37,99,235,0.18),transparent_55%)]" />
         <div className="container relative px-4">
-          <div className="mx-auto max-w-3xl rounded-3xl border border-white/20 bg-white/10 p-12 text-center shadow-[0_25px_60px_rgba(15,23,42,0.28)] backdrop-blur-xl">
-            <span className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.4em] text-foreground/70">
+          <motion.div
+            className="mx-auto max-w-3xl rounded-3xl border border-white/20 bg-white/10 p-12 text-center shadow-[0_25px_60px_rgba(15,23,42,0.28)] backdrop-blur-xl"
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 30px 70px rgba(15,23,42,0.35)",
+              transition: { duration: 0.3 },
+            }}
+          >
+            <motion.span
+              className="inline-flex items-center justify-center rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.4em] text-foreground/70"
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               Ready to go?
-            </span>
-            <h2 className="mt-6 text-3xl md:text-4xl font-bold">Ready to train smarter?</h2>
-            <p className="mt-4 text-xl text-muted-foreground text-balance max-w-2xl mx-auto">
+            </motion.span>
+            <motion.h2
+              className="mt-6 text-3xl md:text-4xl font-bold"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              Ready to train smarter?
+            </motion.h2>
+            <motion.p
+              className="mt-4 text-xl text-muted-foreground text-balance max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
               Join thousands of multi-sport athletes who are already using AthletIQs to reach their potential.
-            </p>
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            </motion.p>
+            <motion.div
+              className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+            >
               <Link href="/onboarding" onClick={activatePlaceholderAccess}>
-                <Button
-                  size="lg"
-                  className="group relative overflow-hidden rounded-full text-lg px-10 py-6 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                  aria-label="Start Training Today"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <span className="relative z-10 flex items-center gap-3">
-                    Start Training Today
-                    <span className="inline-flex h-2 w-2 rounded-full bg-sport-green transition-transform duration-200 group-hover:scale-150" />
-                  </span>
-                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
-                </Button>
+                  <Button
+                    size="lg"
+                    className="group relative overflow-hidden rounded-full text-lg px-10 py-6 transition-all duration-200 hover:shadow-[0_20px_45px_rgba(37,99,235,0.25)] focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    aria-label="Start Training Today"
+                  >
+                    <span className="relative z-10 flex items-center gap-3">
+                      Start Training Today
+                      <motion.span
+                        className="inline-flex h-2 w-2 rounded-full bg-sport-green"
+                        animate={{ scale: [1, 1.5, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
+                    </span>
+                    <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-sport-blue/0 via-sport-green/30 to-sport-orange/0 translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
+                  </Button>
+                </motion.div>
               </Link>
               <Link href="/onboarding" onClick={activatePlaceholderAccess}>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  className="rounded-full border border-white/40 bg-white/10 px-10 py-6 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg"
-                  aria-label="Log In"
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  Log In
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="lg"
+                    className="rounded-full border border-white/40 bg-white/10 px-10 py-6 transition-all duration-200 hover:bg-white/20 hover:shadow-lg"
+                    aria-label="Log In"
+                  >
+                    Log In
+                  </Button>
+                </motion.div>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
