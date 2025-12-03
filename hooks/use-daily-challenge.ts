@@ -116,7 +116,15 @@ export function useDailyChallenge(session: Session | null, options: UseDailyChal
         const errorData = (await response.json().catch(() => ({}))) as { error?: string }
         const errorMessage = errorData.error ?? `Request failed with status ${response.status}`
 
-        if (response.status === 400) {
+        if (response.status === 401) {
+          // Unauthorized - silently use fallback for unauthenticated users
+          const fallbackChallenge = acquireFallbackChallenge()
+          hasFetchedRef.current = true
+          setChallenge(fallbackChallenge)
+          storeChallenge(fallbackChallenge)
+          setLoading(false)
+          return
+        } else if (response.status === 400) {
           // User needs to configure sports
           throw new Error(errorMessage)
         } else if (response.status === 503) {
