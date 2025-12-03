@@ -833,6 +833,7 @@ export default function RootPage() {
             >
               <span className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sport-blue via-sport-green to-sport-orange" />
               <CardContent className="relative z-10 space-y-6 p-10 text-center">
+                {/* @ts-expect-error - AnimatePresence has React 19 type incompatibility */}
                 <AnimatePresence mode="wait">
                   <motion.blockquote
                     key={currentTestimonial}
@@ -846,6 +847,7 @@ export default function RootPage() {
                     &ldquo;{testimonials[currentTestimonial].quote}&rdquo;
                   </motion.blockquote>
                 </AnimatePresence>
+                {/* @ts-expect-error - AnimatePresence has React 19 type incompatibility */}
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`author-${currentTestimonial}`}
