@@ -771,16 +771,17 @@ export default function RootPage() {
                       </div>
                       <h3 className="text-xl font-semibold">{feature.title}</h3>
                       <p className="text-muted-foreground text-balance">{feature.description}</p>
-                      <motion.button
-                        type="button"
-                        onClick={() => setSelectedFeature(index)}
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-sport-green opacity-0 transition-opacity duration-300 hover:text-sport-green/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 group-hover:opacity-100"
-                        aria-label={`Explore more about ${feature.title}`}
-                        whileHover={{ x: 5 }}
-                      >
-                        Explore more
-                        <ChevronRight className="h-4 w-4" />
-                      </motion.button>
+                      <Link href="/onboarding" onClick={activatePlaceholderAccess}>
+                        <motion.button
+                          type="button"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-sport-green opacity-0 transition-opacity duration-300 hover:text-sport-green/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 group-hover:opacity-100"
+                          aria-label={`Explore more about ${feature.title}`}
+                          whileHover={{ x: 5 }}
+                        >
+                          Explore more
+                          <ChevronRight className="h-4 w-4" />
+                        </motion.button>
+                      </Link>
                     </CardContent>
                   </Card>
                 </motion.div>
