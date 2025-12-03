@@ -105,7 +105,7 @@ export function EmojiBadgePicker({ open, onClose, onBadgeSelect }: EmojiBadgePic
 
       {/* Picker modal */}
       <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-2xl mx-auto animate-in zoom-in slide-in-from-bottom-4 duration-300">
-        <div className="bg-gradient-to-b from-gray-900 to-black rounded-3xl shadow-2xl border border-white/10 overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="bg-gradient-to-b from-gray-900 to-black rounded-3xl shadow-2xl border border-white/10 overflow-hidden max-h-[85vh] flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-white/10">
             <div className="flex items-center justify-between mb-4">
@@ -172,14 +172,15 @@ export function EmojiBadgePicker({ open, onClose, onBadgeSelect }: EmojiBadgePic
           </div>
 
           {/* Badges grid */}
-          <ScrollArea className="flex-1 p-6">
-            {filteredBadges.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-white/60">No badges found</p>
-                <p className="text-sm text-white/40 mt-1">Try adjusting your filters</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full p-6">
+              {filteredBadges.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-white/60">No badges found</p>
+                  <p className="text-sm text-white/40 mt-1">Try adjusting your filters</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
                 {Object.entries(groupedBadges)
                   .sort((a, b) => {
                     const order = ['legendary', 'epic', 'rare', 'common']
@@ -225,9 +226,10 @@ export function EmojiBadgePicker({ open, onClose, onBadgeSelect }: EmojiBadgePic
                       </div>
                     )
                   })}
-              </div>
-            )}
-          </ScrollArea>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="p-6 border-t border-white/10">
