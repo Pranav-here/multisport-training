@@ -216,7 +216,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/85 shadow-sm backdrop-blur-lg supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-16 w-full max-w-[1320px] items-center gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
-        <Link href="/discovery" className="flex flex-shrink-0 items-start gap-1 sm:gap-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
+        <Link href="/dashboard" className="flex flex-shrink-0 items-start gap-1 sm:gap-1.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
           <Image
             src="/logo-128.png"
             alt="AthletIQs logo"
